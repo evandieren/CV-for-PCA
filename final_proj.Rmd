@@ -22,10 +22,11 @@ Final deadline : 22/12 to send
 <li>Comparison between those 4 methods on Gaussian data</li>
 
 <li>Rule-of-thumb methods : percentage of variance explained </li>
-<li>Non-automated methods : scree-plot (the elbow plot)</li>
+<li>Non-automated methods : scree-plot (the elbow plot)
 
 
 <li>Lallallero</li>
+<li>Yuppijayjay schweineback
 
 
 <li>Real world data?</li>
