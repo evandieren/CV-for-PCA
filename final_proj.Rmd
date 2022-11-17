@@ -24,6 +24,10 @@ Final deadline : 22/12 to send
 <li>Rule-of-thumb methods : percentage of variance explained </li>
 <li>Non-automated methods : scree-plot (the elbow plot)</li>
 
+
+<li>Lallallero</li>
+
+
 <li>Real world data?</li>
 <li>Added value -> maximize our mark</li>
 </ol>
