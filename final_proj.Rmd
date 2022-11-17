@@ -1,0 +1,29 @@
+---
+title: "Final Project"
+author: "Emanuele Sorgente - Noah Scheider - Eliott Van Dieren"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Todo List
+Final deadline : 22/12 to send
+
+<ol>
+<li> Which extend do we have to explain the theory? (PCA itself and 4 methods for CV)</li>
+
+<li>Implement Artificially turn the unsupervised problem into a supervised one</li>
+<li>Implement Missing data approach -> X must be Gaussian</li>
+<li>Implement Modify the KDE approach</li>
+<li>Implement Use matrix completion, a.k.a. PCA with missing data</li>
+<li>Comparison between those 4 methods on Gaussian data</li>
+
+<li>Rule-of-thumb methods : percentage of variance explained </li>
+<li>Non-automated methods : scree-plot (the elbow plot)</li>
+
+<li>Real world data?</li>
+<li>Added value -> maximize our mark</li>
+</ol>
