@@ -31,4 +31,7 @@ Final deadline : 22/12 to send
 
 <li>Real world data?</li>
 <li>Added value -> maximize our mark</li>
+
+
+<li>Incorporate "General Feedback for Small Projects" - Manual 11 </li>
 </ol>
