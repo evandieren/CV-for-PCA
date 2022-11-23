@@ -30,7 +30,7 @@ for (i in 1:K) {
 # Index can now be used to slice df in every step of cross-validation
 
 # How is r set? r < p
-r <- 3
+r <- 2
 
 # Sample randomly r columns
 trunc <- sample(1:p, p-r)
@@ -125,4 +125,3 @@ mse2
 #d %*% d1
 #colMeans(d)
 #cov(d)
-

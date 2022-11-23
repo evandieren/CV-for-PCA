@@ -11,7 +11,7 @@
 
 <meta name="author" content="Emanuele Sorgente - Noah Scheider - Eliott Van Dieren" />
 
-<meta name="date" content="2022-11-17" />
+<meta name="date" content="2022-11-23" />
 
 <title>Final Project</title>
 
@@ -256,6 +256,7 @@ if (window.hljs) {
 
 
 
+
 <style type="text/css">
 .main-container {
   max-width: 940px;
@@ -276,6 +277,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -362,7 +366,7 @@ pre code {
 <h1 class="title toc-ignore">Final Project</h1>
 <h4 class="author">Emanuele Sorgente - Noah Scheider - Eliott Van
 Dieren</h4>
-<h4 class="date">2022-11-17</h4>
+<h4 class="date">2022-11-23</h4>
 
 </div>
 
@@ -371,10 +375,6 @@ Dieren</h4>
 <h2>Todo List</h2>
 <p>Final deadline : 22/12 to send</p>
 <ol>
-<li>
-Which extend do we have to explain the theory? (PCA itself and 4 methods
-for CV)
-</li>
 <li>
 Implement Artificially turn the unsupervised problem into a supervised
 one
@@ -389,27 +389,101 @@ Implement Modify the KDE approach
 Implement Use matrix completion, a.k.a. PCA with missing data
 </li>
 <li>
-Comparison between those 4 methods on Gaussian data
+Comparison between those 4 methods on Gaussian data - Emphasize on
+noise, correlation, hyperparameter r, comparing with elbow plots
 </li>
 <li>
-Rule-of-thumb methods : percentage of variance explained
+Real world data? - Gaussian with (Gaussian) noise
 </li>
 <li>
-<p>Non-automated methods : scree-plot (the elbow plot)</p>
-<li>
-Lallallero
-</li>
-<li>
-Yuppijayjay schweineback
-<li>
-<p>Eliott smell like pigs</p>
-<li>
-Real world data?
-</li>
-<li>
-Added value -&gt; maximize our mark
+Incorporate “General Feedback for Small Projects” - Manual 11
 </li>
 </ol>
+</div>
+<div id="introduction" class="section level2">
+<h2>1. Introduction</h2>
+<p>Which extend do we have to explain the theory? (PCA itself and 4
+methods for CV) -&gt; Kinda introduction to CV on PCA, like to read
+yourself in order to get familiar, meaningful plots, refer to further
+informations when just scratching them, explain PCA mehtods and
+difference</p>
+<p>When dealing with modern large datasets, the observations’
+dimensionality often becomes a problem when dealing with
+interpretability of the dataset, or for vizualisation. The Principal
+Component Analysis (PCA) is a satatistical technique used to reduce the
+dimension of the dataset, while trying to keep as much information as
+possible from the original dataset. For example, PCA is often used to
+bring the high-dimension dataset to <span class="math inline">\(\mathbb{R}^2\)</span> or <span class="math inline">\(\mathbb{R}^3\)</span> to vizualise the datapoints
+and identify clusters. It does so by computing Principal components from
+the dataset and projecting datapoints to this new basis, therefore
+reduing the dimensionnality of the datapoints.</p>
+<p>Mathematically speaking, we can define principal components as an
+orthonormal basis of directions which sequentially capture the most
+variance in the data. Practically, the PCs can be found with the
+following optimization problems for a given centered Gaussian dataset
+<span class="math inline">\(\mathbf x_1,\ldots,\mathbf x_N \in
+\mathbb{R}^p\)</span>: <span class="math display">\[
+\begin{split}
+v_1 &amp;= \underset{v, \| v \|=1}{\mathrm{arg\,max}} \mbox{ } v^\top
+\widehat{\boldsymbol{\Sigma}} v \\
+v_2 &amp;= \underset{v, \| v \|=1, v^\top v_1 = 0}{\mathrm{arg\,max}}
+v^\top \widehat{\boldsymbol{\Sigma}} v \\
+&amp;\;\;\vdots
+\end{split}
+\]</span></p>
+<p>with <span class="math inline">\(\widehat{\Sigma} =
+N^{-1}\sum_{n=1}^N \mathbf x_n \mathbf x_n^\top\)</span> being the
+empirical covariance matrix of the dataset. More information about
+Principal component analysis can be found in <a href="https://link.springer.com/book/10.1007/b98835">Jolliffe, 2002</a>
+or directly on <a href="https://en.wikipedia.org/wiki/Principal_component_analysis">wiki</a></p>
+<p>This project will focus on finding the optimal No. of PCs (<span class="math inline">\(r\)</span>), which dictates a trade-off between
+the complexity of the model and the interpretability of the dataset. In
+fact, the higher <span class="math inline">\(r\)</span>, the higher the
+explained variance, but less interpretable the dataset. To optimally
+choose the No. of components, several techniques have been created, such
+as the method of percentage of variance explained, using the Scree-plot
+or Cross-Validation for PCA.</p>
+<p>The percentage of variance explained method is based on the
+covariance matrix of our datased, and the percentage of variance vs the
+total variabillity (sum of diagonal entries of the original covariance
+matrix). When computing the PCs, we create an orthonormal basis, with a
+corresponding diagonal covariance matrix. Each diagonal entry is the
+eigenvalue related to each components. As we sequentially construct the
+components, the sequence of eigenvalues will decrease. The technique of
+percentage of variance explained is simply to select the first <span class="math inline">\(r\)</span> components such that $_{i=1}^{r} _i
+&gt; $ for an arbitrary <span class="math inline">\(\alpha\)</span>.</p>
+<p>Cross-validation for PCA is used for</p>
+<div id="simulation-dataset-description" class="section level3">
+<h3>1.3 Simulation dataset description</h3>
+</div>
+</div>
+<div id="cross-validation-on-pca-methods" class="section level2">
+<h2>2. Cross-validation on PCA methods</h2>
+<div id="artificially-turn-the-unsupervised-problem-into-a-supervised-one" class="section level3">
+<h3>2.1 Artificially turn the unsupervised problem into a supervised
+one</h3>
+</div>
+<div id="missing-data-approach" class="section level3">
+<h3>2.2 Missing data approach</h3>
+</div>
+</div>
+<div id="comparison-of-cv-methods" class="section level2">
+<h2>3. Comparison of CV methods</h2>
+</div>
+<div id="other-dimension-reduction-techniques-and-comparison-with-cv" class="section level2">
+<h2>4. Other dimension-reduction techniques and comparison with CV</h2>
+<div id="percentage-of-variance-explained-method" class="section level3">
+<h3>4.1 Percentage of variance explained method</h3>
+</div>
+<div id="scree-plot-method-non-automatic" class="section level3">
+<h3>4.2 Scree-plot method (non-automatic)</h3>
+</div>
+<div id="comparison-with-cv-methods" class="section level3">
+<h3>4.3 Comparison with CV methods</h3>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2>5. Conclusion</h2>
 </div>
 
 
