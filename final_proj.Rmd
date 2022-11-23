@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(mvtnorm)
 ```
 
 ## Todo List
@@ -28,9 +29,9 @@ Final deadline : 22/12 to send
 Which extend do we have to explain the theory? (PCA itself and 4 methods for CV) -> Kinda introduction to CV on PCA, like to read yourself in order to get familiar, meaningful plots, refer to further informations when just scratching them, explain PCA mehtods and difference
 
 
-When dealing with modern large datasets, the observations' dimensionality often becomes a problem when dealing with interpretability of the dataset, or for vizualisation. The Principal Component Analysis (PCA) is a satatistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset. For example, PCA is often used to bring the high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise the datapoints and identify clusters. It does so by computing Principal components from the dataset and projecting datapoints to this new basis, therefore reduing the dimensionnality of the datapoints.
+When dealing with modern large datasets, the observations' dimensionality often becomes a problem when dealing with interpretability of the dataset, or for its vizualisation, especially in a data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset. For example, PCA is often used to bring a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and identify clusters. It does so by computing Principal components from the dataset and projecting datapoints to this new basis.
 
-Mathematically speaking, we can define principal components as an orthonormal basis of directions which sequentially capture the most variance in the data. Practically, the PCs can be found with the following optimization problems for a given centered Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
+Mathematically speaking, we can define principal components as an orthonormal basis of unit vectors which sequentially capture the most variance in the data. Practically, the PCs can be found with the following optimization problems for a given centered Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
 \[
 \begin{split}
 v_1 &= \underset{v, \| v \|=1}{\mathrm{arg\,max}} \mbox{ } v^\top \widehat{\boldsymbol{\Sigma}} v \\
@@ -39,22 +40,165 @@ v_2 &= \underset{v, \| v \|=1, v^\top v_1 = 0}{\mathrm{arg\,max}} v^\top \wideha
 \end{split}
 \]
 
-with $\widehat{\Sigma} = N^{-1}\sum_{n=1}^N \mathbf x_n \mathbf x_n^\top$ being the empirical covariance matrix of the dataset. More information about Principal component analysis can be found in [Jolliffe, 2002](https://link.springer.com/book/10.1007/b98835) or directly on [wiki](https://en.wikipedia.org/wiki/Principal_component_analysis)
+with $\widehat{\Sigma} = N^{-1}\sum_{n=1}^N \mathbf x_n \mathbf x_n^\top \in \mathbb{R}^{p\times p}$ being the empirical covariance matrix of the dataset. More information about Principal component analysis can be found in [Jolliffe, 2002](https://link.springer.com/book/10.1007/b98835) or directly on [wiki](https://en.wikipedia.org/wiki/Principal_component_analysis)
+
+```{r, echo=F, out.width='25%', fig.align='center'}
+knitr::include_graphics('./Figures/PCA_p_2_example.png')
+```
 
 
-This project will focus on finding the optimal No. of PCs ($r$), which dictates a trade-off between the complexity of the model and the interpretability of the dataset. In fact, the higher $r$, the higher the explained variance, but less interpretable the dataset. To optimally choose the No. of components, several techniques have been created, such as the method of percentage of variance explained, using the Scree-plot or Cross-Validation for PCA.
+This project will focus on finding the optimal number of principal components ($r$), which dictates a trade-off between the model's complexity and its interpretability. In fact, higher the $r$, higher the explained variance, but less interpretable the dataset. To optimally choose the number of PCs, several techniques have been created, such as the method of percentage of variance explained, using the Scree-plot or Cross-Validation for PCA (described in [2. Cross-validation on PCA methods]).
 
-The percentage of variance explained method is based on the covariance matrix of our datased, and the percentage of variance vs the total variabillity (sum of diagonal entries of the original covariance matrix). When computing the PCs, we create an orthonormal basis, with a corresponding diagonal covariance matrix. Each diagonal entry is the eigenvalue related to each components. As we sequentially construct the components, the sequence of eigenvalues will decrease. The technique of percentage of variance explained is simply to select the first $r$ components such that $\sum_{i=1}^{r} \lambda_i > \alpha $ for an arbitrary $\alpha$.
+The percentage of variance explained method is based on the dataset's covariance matrix, and the percentage of variance vs. the total variability (sum of diagonal entries of the original covariance matrix). When computing the PCs for a given dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$, we create an orthonormal basis with a corresponding diagonal covariance matrix with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_r \in \mathbb{R}$ will be a decreasing function. The method of percentage of variance explained is simply to select the first $r$ components such that $\sum_{i=1}^r \lambda_i > \tau V$ for an arbitrary treshold $\tau$ and a total variability $V = \sum_{i=1}^p \lambda_i$.
 
-Cross-validation for PCA is used for 
+The Scree-plot is again related to the eigenvalues of the newly created orthonormal basis of PCs. As shown above, the eigenvalues corresponding to the PCs are a decreasing sequence, so we get a graph as below when plotting the PCs index vs the eigenvalue :
+```{r, echo=F, out.width='50%', fig.align='center'}
+knitr::include_graphics('./Figures/scree_plot_example.png')
+```
+
+The Scree-plot method consists of choosing the value of $r$ which is the elbow of the graph as seen above. In this example, the optimal value of $r$ is $3$.
 
 ### 1.3 Simulation dataset description
+In order to compare different cross-validation methods and the two other methods for finding $r$, the chosen simulation dataset will consist of a centered multivariate Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$ with a covariance matrix : ## ADD.
+
+This choice of multivariate Gaussian is due to the constraints of implementation for methods described in [2. Cross-validation on PCA methods]. Without certain properties of Gaussian vectors, such as the conditional expectation for the first method would not give us closed form estimators.
 
 ## 2. Cross-validation on PCA methods
 
+```{r, echo=F}
+# Dataframe as input
+df <- c()
+# Create folds for Cross-Validation
+df_df <- data.frame("obs1"=c(5,43,2,3,1,4,8,4,5,9), "obs2"=c(5,6,7,3,9,9,12,1,5,8), "obs3"=c(1,2,5,3,4,5,6,1,5,7), "obs4"=c(1,7,6,3,4,5,6,1,7,10))
+df <- as.matrix(df_df)
+n <- dim(df)[1]
+p <- dim(df)[2]
+index <- c(1:n)
+K <- 3
+samples <- vector("list", K)
+for (i in 1:K) {
+  if (i < K) {
+    fold <- sample(index, n/K)
+    samples[[i]] <- fold
+    #print(which(fold %in% index))
+    index <- index[-which(index %in% fold)]
+  }
+  else{
+    samples[[i]] <- index
+  }
+}
+# Index can now be used to slice df in every step of cross-validation
+
+# How is r set? r < p
+r <- 2
+# Sample randomly r columns
+trunc <- sample(1:p, p-r)
+```
+
 ### 2.1 Artificially turn the unsupervised problem into a supervised one
 
+As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we can implement the first method as below:
+
+  * split data into $K$ folds $J_1,\ldots,J_K$
+  * **for** $k=1,\ldots,K$
+    - Compute $\hat{\mu}_r$ and $\hat{\Sigma}_r$ (the empirical estimator truncated to rank r) on $X\setminus J_k$.
+    - Split every data point $\mathbf{x}$ belonging to $J_k$ into a "missing" part $\mathbf{x}^{miss}$ that will be used for validation and an "observed" part $\mathbf{x}^{obs}$.
+    - predict the missing part from the observed part using the $\hat{\mu}_r$ and $\hat{\Sigma}_r$ ......
+  * **end for**
+  * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$
+
+
+
+```{r, echo=F}
+# Cross-Validation: "Artificially turn the unsupervised problem into a supervised one"
+
+# Split data into missing and observed data on jth component
+# e.g. split missing and observed data in half, or split variables randomly
+# split <- sample(1:p, ceiling(ratio)), ratio < r as data is truncated to rank r
+
+split <- 1:ceiling(r/2)
+
+mse1 <- rep(0, K)
+
+for (k in 1:K) {
+  l1 <- length(samples[[k]])
+  
+  df_k <- df[-samples[[k]],]
+  mu <- colMeans(df_k)
+  mu_trunc <- mu[-trunc]
+  sigma <- cov(df_k)
+  sigma_trunc <- sigma[-trunc,-trunc]
+  
+  df_k_fold <- df[samples[[k]],]
+  df_k_fold_trunc <- df_k_fold[,-trunc]
+  df_k_fold_miss <- as.matrix(df_k_fold_trunc[,split])
+  df_k_fold_obs <- as.matrix(df_k_fold_trunc[,-split])
+  
+  # Estimate est_x_miss for df_k_fold_miss
+  mu_miss <- mu_trunc[split]
+  mu_obs <- mu_trunc[-split]
+  sigma_miss_obs <- sigma_trunc[split, -split]
+  sigma_obs_obs <- sigma_trunc[-split, -split]
+
+  est_x_miss <- lapply(1:l1, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs)%*%(df_k_fold_obs[n,]-mu_obs)})
+  
+  # Error of estimated and true missing observation
+  for(s in 1:l1){
+    mse1[k] <- mse1[k] + norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K
+  }
+}
+```
 ### 2.2 Missing data approach
+
+```{r, echo=F}
+
+# Cross-Validation: "Missing Data Approach"
+
+# Split data into missing and observed data on jth component
+# e.g. split missing and observed data in half, or split variables randomly
+# splitting the data can be done for all variables regardless of r
+# split <- sample(1:p, ceiling(ratio)), ratio !< r
+split <- 1:ceiling(r/2)
+
+mse2 <- rep(0, K)
+
+for (k in 1:K) {
+  l1 <- length(samples[[k]])
+  
+  df_k <- df[-samples[[k]],]
+  mu <- colMeans(df_k)
+  svd_sigma <- svd(cov(df_k))
+  sigma_trunc <- svd_sigma$u[,-trunc] %*% diag(svd_sigma$d[-trunc]) %*% t(svd_sigma$u[,-trunc])
+  cov(df_k)
+  
+  df_k_fold <- df[samples[[k]],]
+  df_k_fold_miss <- as.matrix(df_k_fold[,split])
+  df_k_fold_obs <- as.matrix(df_k_fold[,-split])
+  
+  # Estimate est_x_miss for df_k_fold_miss
+  mu_miss <- mu[split]
+  mu_obs <- mu[-split]
+  sigma_miss_obs <- sigma_trunc[split, -split]
+  sigma_obs_obs <- sigma_trunc[-split, -split]
+  
+  est_x_miss <- lapply(1:l1, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs)%*%(df_k_fold_obs[n,]-mu_obs)})
+  
+  # Error of estimated and true missing observation
+  for(s in 1:l1){
+    mse2[k] <- mse2[k] + norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K
+  }
+  
+}
+
+mse1
+mse2
+```
+
+
+## 2.3 KDE modified approach
+
+
+## 2.4 Matrix completion method
 
 ## 3. Comparison of CV methods
 
