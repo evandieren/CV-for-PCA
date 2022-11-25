@@ -53,13 +53,10 @@ WrongPCA <- function(X, pca_vec, K){
     df_k_proj <- X_proj[samples[[k]],]
     
     # Error of estimated and true missing observation
-    for(s in 1:l1){
-      mse[k] <- mse[k] + norm(df_k[s,] - df_k_proj[s,], type = "2")^2/l1/K
-    }
+    mse <- sapply(1:l1, function(s){norm(df_k[s,] - df_k_proj[s,], type = "2")^2/l1/K})
   }
   
   return(sum(mse))
-
 }
 
 WrongPCA(df1, 1:3, 5)
@@ -113,9 +110,7 @@ WrongPCAImproved <- function(X, pca_vec, K){
     est_x_miss <- lapply(1:l1, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs)%*%(df_k_fold_obs[n,]-mu_obs)})
     
     # Error of estimated and true missing observation
-    for(s in 1:l1){
-      mse1[k] <- mse1[k] + norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K
-    }
+    mse1 <- sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K})
   }
   
   return(sum(mse1))
