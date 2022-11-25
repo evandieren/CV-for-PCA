@@ -14,8 +14,9 @@ library(mvtnorm)
 Final deadline : 22/12 to send
 
 <ol>
-<li>Implement Artificially turn the unsupervised problem into a supervised one</li>
-<li>Implement Missing data approach -> X must be Gaussian</li>
+<li>~~To which extend do we have to explain the theory? (PCA itself and 4 methods for CV) -> Kinda introduction to CV on PCA, like to read yourself in order to get familiar, meaningful plots, refer to further informations when just scratching them, explain PCA mehtods and difference~~</li>
+<li>~~Implement Artificially turn the unsupervised problem into a supervised one~~</li>
+<li>~~Implement Missing data approach -> X must be Gaussian~~</li>
 <li>Implement Modify the KDE approach</li>
 <li>Implement Use matrix completion, a.k.a. PCA with missing data</li>
 <li>Comparison between those 4 methods on Gaussian data - Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots</li>
@@ -26,8 +27,6 @@ Final deadline : 22/12 to send
 </ol>
 
 ## 1. Introduction
-Which extend do we have to explain the theory? (PCA itself and 4 methods for CV) -> Kinda introduction to CV on PCA, like to read yourself in order to get familiar, meaningful plots, refer to further informations when just scratching them, explain PCA mehtods and difference
-
 
 When dealing with modern large datasets, the observations' dimensionality often becomes a problem when dealing with interpretability of the dataset, or for its vizualisation, especially in a data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset. For example, PCA is often used to bring a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and identify clusters. It does so by computing Principal components from the dataset and projecting datapoints to this new basis.
 
@@ -90,7 +89,7 @@ for (i in 1:K) {
 # Index can now be used to slice df in every step of cross-validation
 
 # How is r set? r < p
-r <- 2
+r <- 3
 # Sample randomly r columns
 trunc <- sample(1:p, p-r)
 ```

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Emanuele Sorgente - Noah Scheider - Eliott Van Dieren" />
 
-<meta name="date" content="2022-11-23" />
+<meta name="date" content="2022-11-24" />
 
 <title>Final Project</title>
 
@@ -366,7 +366,7 @@ pre code {
 <h1 class="title toc-ignore">Final Project</h1>
 <h4 class="author">Emanuele Sorgente - Noah Scheider - Eliott Van
 Dieren</h4>
-<h4 class="date">2022-11-23</h4>
+<h4 class="date">2022-11-24</h4>
 
 </div>
 
@@ -376,11 +376,18 @@ Dieren</h4>
 <p>Final deadline : 22/12 to send</p>
 <ol>
 <li>
-Implement Artificially turn the unsupervised problem into a supervised
-one
+<del>To which extend do we have to explain the theory? (PCA itself and 4
+methods for CV) -&gt; Kinda introduction to CV on PCA, like to read
+yourself in order to get familiar, meaningful plots, refer to further
+informations when just scratching them, explain PCA mehtods and
+difference</del>
 </li>
 <li>
-Implement Missing data approach -&gt; X must be Gaussian
+<del>Implement Artificially turn the unsupervised problem into a
+supervised one</del>
+</li>
+<li>
+<del>Implement Missing data approach -&gt; X must be Gaussian</del>
 </li>
 <li>
 Implement Modify the KDE approach
@@ -402,11 +409,6 @@ Incorporate “General Feedback for Small Projects” - Manual 11
 </div>
 <div id="introduction" class="section level2">
 <h2>1. Introduction</h2>
-<p>Which extend do we have to explain the theory? (PCA itself and 4
-methods for CV) -&gt; Kinda introduction to CV on PCA, like to read
-yourself in order to get familiar, meaningful plots, refer to further
-informations when just scratching them, explain PCA mehtods and
-difference</p>
 <p>When dealing with modern large datasets, the observations’
 dimensionality often becomes a problem when dealing with
 interpretability of the dataset, or for its vizualisation, especially in
@@ -496,7 +498,7 @@ truncated to rank r) on <span class="math inline">\(X\setminus
 J_k\)</span>.</li>
 <li>Split every data point <span class="math inline">\(\mathbf{x}\)</span> belonging to <span class="math inline">\(J_k\)</span> into a “missing” part <span class="math inline">\(\mathbf{x}^{miss}\)</span> that will be used for
 validation and an “observed” part <span class="math inline">\(\mathbf{x}^{obs}\)</span>.</li>
-<li>predict the missing part from the observed part using the <span class="math inline">\(\hat{\mu}_r\)</span> and <span class="math inline">\(\hat{\Sigma}_r\)</span></li>
+<li>predict the missing part from the observed part using the <span class="math inline">\(\hat{\mu}_r\)</span> and <span class="math inline">\(\hat{\Sigma}_r\)</span> ……</li>
 </ul></li>
 <li><strong>end for</strong></li>
 <li>choose <span class="math inline">\(\widehat{r} =
@@ -505,7 +507,15 @@ validation and an “observed” part <span class="math inline">\(\mathbf{x}^{ob
 </div>
 <div id="missing-data-approach" class="section level3">
 <h3>2.2 Missing data approach</h3>
+<pre><code>## [1]   8.783673 157.797009  80.491631</code></pre>
+<pre><code>## [1] 22.57508 82.81785 29.60398</code></pre>
 </div>
+</div>
+<div id="kde-modified-approach" class="section level2">
+<h2>2.3 KDE modified approach</h2>
+</div>
+<div id="matrix-completion-method" class="section level2">
+<h2>2.4 Matrix completion method</h2>
 </div>
 <div id="comparison-of-cv-methods" class="section level2">
 <h2>3. Comparison of CV methods</h2>
