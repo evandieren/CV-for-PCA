@@ -210,6 +210,7 @@ MatrixCompletion(df1, 1:2)
 
 # ..
 # Method 0: Correctly implemented?
+# Method 0: tol = 1e-20
 # Method 1: Splitting missing and observed data differently in Folds?
 # Method 4: When is convergence achieved? How to choose tolerance?
 
