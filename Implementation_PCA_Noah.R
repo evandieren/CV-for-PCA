@@ -37,6 +37,7 @@ WrongPCA <- function(X, pca_vec, K){
       samples[[i]] <- index
     }
   }
+  print(samples)
   
   mse <- rep(0, K)
   
