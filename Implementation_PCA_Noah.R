@@ -37,7 +37,7 @@ WrongPCA <- function(X, pca_vec, K){
       samples[[i]] <- index
     }
   }
-  print(samples)
+  # print(samples)
   
   mse <- rep(0, K)
   
@@ -56,7 +56,6 @@ WrongPCA <- function(X, pca_vec, K){
     # Error of estimated and true missing observation
     mse <- sapply(1:l1, function(s){norm(df_k[s,] - df_k_proj[s,], type = "2")^2/l1/K})
   }
-  
   return(sum(mse))
 }
 
