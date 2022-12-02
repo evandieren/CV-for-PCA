@@ -40,7 +40,7 @@ Final deadline : 22/12 to send
 * Report:
   
   * For **each** method explanation, pseudo-code, simulation & documentation, conclusion <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>, <span style="color:brown">Emanuele</span>
-  * Extend [1.3 Simulation dataset description] <span style="color:brown">Emanuele</span>
+  * Extend [1.3 Simulation dataset description] <span style="color:gray">Eliott</span>
   * Add a section 1.4 for the real data set and what we want to examine  <span style="color:brown">Emanuele</span>
   * I think adding a paragraph add the and combining all the methods for the real data set at the would be the cleanest way and a nice tranisition for the overall conclusion afterwards
   * Overall conclusion
