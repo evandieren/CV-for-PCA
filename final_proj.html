@@ -202,19 +202,27 @@ Comparison between those 4 methods on Gaussian data - Emphasize on noise, correl
 Real world data? - Gaussian with (Gaussian) noise
 </li>
 </ol>
-<p>Work for 2.12-4.12:</p>
+<p><strong>Work for 2.12-4.12:</strong></p>
+<p><span style="color:brown">Emanuele</span> <span style="color:orange">Noah</span> <span style="color:gray">Eliott</span></p>
 <ul>
 <li><p>Find a multivariate Gaussian Data set</p></li>
-<li><p>Check Methods again</p></li>
-<li><p>Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots) - document along the way</p></li>
+<li><p>Check Method0 - WrongPCA again <span style="color:orange">Noah</span></p></li>
+<li><p>Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span></p></li>
+<li><p>Check Method2 - MissingData again</p></li>
+<li><p>Check Method3 - KDEApproach again <span style="color:orange">Noah</span></p></li>
+<li><p>Check Method4 - MatrixCompletion <span style="color:orange">Noah</span></p></li>
+<li><p>Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots, use the same generated data for the different methods) - document along the way</p></li>
 <li><p>Rerun simulation study on real data set - document along the way</p></li>
 <li><p>Report:</p>
 <ul>
-<li>For <em>each</em> method explanation, pseudo-code, simulation documentation, conclusion</li>
-<li>Incorporate “General Feedback for Small Projects” - Manual 11</li>
+<li>For <strong>each</strong> method explanation, pseudo-code, simulation &amp; documentation, conclusion</li>
+<li>Extend <a href="#simulation-dataset-description">1.3 Simulation dataset description</a> <span style="color:orange">Noah</span></li>
+<li>Add a section 1.4 for the real data set and what we want to examine</li>
+<li>I think adding a paragraph add the and combining all the methods for the real data set would be the cleanest way</li>
 <li>Overall conclusion</li>
-<li>Read through other parts and note down suggestioons in order to ask Masàk next week
-</li></li>
+<li>Consider and incorporate “General Feedback for Small Projects” - Manual 11 (Copied to our github)</li>
+<li>Read through other parts and note down suggestions and <strong>any</strong> uncertainties</li>
+<li>Ask Masàk next week about those</li>
 </ul></li>
 </ul>
 </div>
@@ -259,8 +267,8 @@ v_2 &amp;= \underset{v, \| v \|=1, v^\top v_1 = 0}{\mathrm{arg\,max}} v^\top \wi
 </div>
 <div id="missing-data-approach" class="section level3">
 <h3>2.2 Missing data approach</h3>
-<pre><code>## [1]  28.68503  88.29200 135.42188</code></pre>
-<pre><code>## [1]   8.187334  45.168078 257.048827</code></pre>
+<pre><code>## [1] 245.84183  13.72417 133.23240</code></pre>
+<pre><code>## [1] 45.55211 51.44827 57.82035</code></pre>
 </div>
 </div>
 <div id="kde-modified-approach" class="section level2">
