@@ -29,20 +29,20 @@ Final deadline : 22/12 to send
 <span style="color:orange">Noah</span>
 <span style="color:gray">Eliott</span>
 
-* Find a multivariate Gaussian Data set
+* Find a multivariate Gaussian Data set <span style="color:brown">Emanuele</span>
 * Check Method0 - WrongPCA again <span style="color:orange">Noah</span>
 * Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span>
-* Check Method2 - MissingData again
+* Check Method2 - MissingData again <span style="color:gray">Eliott</span>
 * Check Method3 - KDEApproach again <span style="color:orange">Noah</span>
 * Check Method4 - MatrixCompletion <span style="color:orange">Noah</span>
-* Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots, use the same generated data for the different methods) - document along the way
-* Rerun simulation study on real data set - document along the way
+* Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots, use the same generated data for the different methods) - document along the way <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>
+* Rerun simulation study on real data set - document along the way <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>
 * Report:
   
-  * For **each** method explanation, pseudo-code, simulation & documentation, conclusion
-  * Extend [1.3 Simulation dataset description] <span style="color:orange">Noah</span>
-  * Add a section 1.4 for the real data set and what we want to examine
-  * I think adding a paragraph add the and combining all the methods for the real data set would be the cleanest way
+  * For **each** method explanation, pseudo-code, simulation & documentation, conclusion <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>
+  * Extend [1.3 Simulation dataset description] <span style="color:brown">Emanuele</span>
+  * Add a section 1.4 for the real data set and what we want to examine  <span style="color:brown">Emanuele</span>
+  * I think adding a paragraph add the and combining all the methods for the real data set at the would be the cleanest way and a nice tranisition for the overall conclusion afterwards
   * Overall conclusion
   * Consider and incorporate "General Feedback for Small Projects" - Manual 11 (Copied to our github)
   * Read through other parts and note down suggestions and **any** uncertainties
