@@ -9,6 +9,18 @@ df <- as.matrix(df_df)
 sigma <- matrix(c(5,43,2,3,1,4,8,4,5,9,5,43,2,3,1,4,8,4,5,9,5,43,2,3,1), nrow = 5, ncol = 5)
 df1 <- rmvnorm(n = 20, mean = rep(0, nrow(sigma)), sigma = sigma %*% t(sigma))
 
+EM_MissingData <- function(X){
+  # X has missing values
+  N <- nrow(X)
+  
+  mu <- colMeans(X)/N
+  
+  tol <- Inf
+  
+  
+}
+
+
 MissingData <- function(X, pca_vec, K){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), K amount of CV-Folds
   # returns: MSE of the CV
@@ -30,7 +42,7 @@ MissingData <- function(X, pca_vec, K){
     df_k <- X[-folds[k,],]
     
     mu <- colMeans(df_k)
-    eigen_sigma <- eigen(cov(df1))
+    eigen_sigma <- eigen(cov(df_k))
     eigen_sigma$values[-pca_vec] <- 0 # truncation of the p-r last eigenvalues
     eigen_sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors)
     
