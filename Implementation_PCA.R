@@ -2,8 +2,8 @@
 library(mvtnorm)
 
 
-df_df <- data.frame("obs1"=c(5,43,2,3,1,4,8,4,5,9), "obs2"=c(5,43,2,3,1,4,8,4,5,9), "obs3"=c(1,2,5,3,4,5,6,1,5,7), "obs4"=c(1,7,6,3,4,5,6,1,7,10))
-df <- as.matrix(df_df)
+# df_df <- data.frame("obs1"=c(5,43,2,3,1,4,8,4,5,9), "obs2"=c(5,43,2,3,1,4,8,4,5,9), "obs3"=c(1,2,5,3,4,5,6,1,5,7), "obs4"=c(1,7,6,3,4,5,6,1,7,10))
+# df <- as.matrix(df_df)
 
 
 # Create Multivariate Random Variables
@@ -147,8 +147,6 @@ for (i in 1:K) {
 sin <- svd(df1) # Scree plot
 plot(1:5, sin$d)
 
-debug(WrongPCA)
-
 WrongPCA_err <- sapply(2:5, function(k){WrongPCA(df1, 1:k, samples)})
 WrongPCAImproved_err <- sapply(2:5, function(k){WrongPCAImproved(df1, 1:k, samples)})
 plot(2:5, WrongPCA_err, "l", col = 1) # should return 0 for 5 but doesn't?
@@ -158,6 +156,7 @@ KDEApproach_err <- sapply(2:5, function(n){KDEApproach(df1, 1:n)})
 MatrixCompletion_err <- sapply(2:5, function(n){MatrixCompletion(df1, 1:n)})
 plot(2:5, KDEApproach_err, "l", col = 1)
 plot(2:5, MatrixCompletion_err, col = 2)
+
 
 # Questions:
 
@@ -169,14 +168,6 @@ plot(2:5, MatrixCompletion_err, col = 2)
 # Method 1: Truncating Missed and Observed data accordingly? -> No
 # Method 2: Still p dimensions? -> Yes
 # Method 3: How to cross-validate? Different error measure of covariance similiarity
-
-# ..
-# Method 0: Correctly implemented?
-# Method 0: tol = 1e-20?
-# Method 1: Splitting missing and observed data differently in Folds?
-# Method 4: When is convergence achieved? How to choose tolerance?
-
-
 
 
 
