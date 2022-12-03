@@ -31,7 +31,7 @@ MissingData <- function(X, pca_vec, K){
     
     mu <- colMeans(df_k)
     eigen_sigma <- eigen(cov(df1))
-    eigen_sigma$values[-pca_vec] = 0 # truncation of the p-r last eigenvalues
+    eigen_sigma$values[-pca_vec] <- 0 # truncation of the p-r last eigenvalues
     eigen_sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors)
     
     df_fold <- X[folds[k,],]

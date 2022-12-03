@@ -1,5 +1,6 @@
 # mvtnorm provides possibility to create multivariate gaussian rv
 library(mvtnorm)
+library(MASS)
 
 
 # df_df <- data.frame("obs1"=c(5,43,2,3,1,4,8,4,5,9), "obs2"=c(5,43,2,3,1,4,8,4,5,9), "obs3"=c(1,2,5,3,4,5,6,1,5,7), "obs4"=c(1,7,6,3,4,5,6,1,7,10))
@@ -17,75 +18,86 @@ summary(pca3) # overview of the extent a variable explains the data
 pca3$sdev # array sorted by Principal components that explain % of standard deviation
 
 
-WrongPCA <- function(X, pca_vec, samples){
+WrongPCA <- function(X, samples){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
   # returns: MSE of the CV
   
   K <- length(samples)
-  mse <- rep(0, K)
+  p <- ncol(X)
+  mse <- rep(0, p)
   
-  for (k in 1:K) {
-    l1 <- length(samples[[k]])
-    df_k_fold <- X[samples[[k]], ]
-    
-    svd_X <- svd(X)
-    X_trunc <- svd_X$u[,pca_vec] %*% diag(svd_X$d[pca_vec]) %*% t(svd_X$v)[pca_vec,]
+  for (r in 1:p) {
+    for (k in 1:K) {
+      l1 <- length(samples[[k]])
+      df_k_fold <- X[samples[[k]], ]
+      df_k <- X[-samples[[k]],]
+      
+      svd_X <- svd(df_k)
+      a <- svd_X$u[,1:r]
+      if (r==1){
+        b <- as.matrix(svd_X$d[1:r])
+      }
+      else{
+        b <- diag(svd_X$d[1:r])
+      }
+      c <- t(svd_X$v)[1:r,]
+      X_trunc <- a %*% b %*% c
+      U <- prcomp(X_trunc,rank.=r)$rotation
+      
+      # Define projection and project data
+      P <- U%*%t(U)
+      # X_trunc%*% solve(t(X_trunc) %*% X_trunc, tol = 1e-20) %*% t(X_trunc)
+      df_k_proj <- P %*% t(df_k_fold)
 
-    # Define projection and project data
-    P <- X_trunc %*% solve(t(X_trunc) %*% X_trunc, tol = 1e-20) %*% t(X_trunc)
-    X_proj <- P %*% X
-    df_k_proj <- X_proj[samples[[k]],]
-    
-    # Error of estimated and true missing observation
-    mse[k] <- sum(sapply(1:l1, function(s){norm(df_k_fold[s,] - df_k_proj[s,], type = "2")^2/l1}))
-    # Error is ridiculous
-    # es <- df_k_proj
-    # es1 <- df_k_fold
+      # Error of estimated and true missing observation
+      mse[r] <- sum(sapply(1:l1, function(s){norm(df_k_fold[s,] - df_k_proj[,s], type = "2")^2/l1})) + mse[r]
+      # Error is ridiculous
+      # es <- df_k_proj
+      # es1 <- df_k_fold
+    }
   }
-  return(sum(mse))
+  
+  return(mse)
 }
 
 
-WrongPCAImproved <- function(X, pca_vec, samples){
+
+WrongPCAImproved <- function(X, samples){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
   # returns: MSE of the CV
   
   K <- length(samples)
-  mse1 <- rep(0, K)
   p <- ncol(X)
+  mse1 <- rep(0, p)
   
   # Split data into missing and observed data
   split <- sample(1:p, floor(p/2))
   
-  for (k in 1:K) {
-    l1 <- length(samples[[k]])
-    
-    df_k <- X[-samples[[k]],]
-    mu <- colMeans(df_k)
-    svd_sigma <- svd(cov(df_k))
-    sigma_trunc <- svd_sigma$u[,pca_vec] %*% diag(svd_sigma$d[pca_vec]) %*% t(svd_sigma$v)[pca_vec,]
-    
-    df_k_fold <- X[samples[[k]],]
-    df_k_fold_miss <- as.matrix(df_k_fold[,split])
-    df_k_fold_obs <- as.matrix(df_k_fold[,-split])
-    
-    # Estimate est_x_miss for df_k_fold_miss
-    mu_miss <- mu[split]
-    mu_obs <- mu[-split]
-    
-    sigma_miss_obs <- sigma_trunc[split, -split]
-    sigma_obs_obs <- sigma_trunc[-split, -split]
-    
-    est_x_miss <- lapply(1:l1, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs, tol = 1e-20)%*%(df_k_fold_obs[n,]-mu_obs)})
-    
-    # Error of estimated and true missing observation
-    mse1[k] <- sum(sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K}))
-    # Error is ridiculous
-    # es <- est_x_miss
-    # es1 <- df_k_fold_miss
+  for (r in 1:p) {
+    for (k in 1:K) {
+      l1 <- length(samples[[k]])
+      
+      df_k <- X[-samples[[k]],]
+      mu <- colMeans(df_k)
+      svd_sigma <- svd(cov(df_k))
+      svd_sigma$d[-(1:r)] <- 0
+      sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v)
+      
+      df_k_fold <- X[samples[[k]],]
+      df_k_fold_miss <- as.matrix(df_k_fold[,split])
+      df_k_fold_obs <- as.matrix(df_k_fold[,-split])
+      
+      # Estimate est_x_miss for df_k_fold_miss
+      mu_miss <- mu[split]
+      mu_obs <- mu[-split]
+      sigma_miss_obs <- sigma_trunc[split, -split]
+      sigma_obs_obs <- sigma_trunc[-split, -split]
+      
+      est_x_miss <- lapply(1:l1, function(n){mu_miss + sigma_miss_obs %*% ginv(sigma_obs_obs, tol = 1e-20) %*% (df_k_fold_obs[n,]-mu_obs)})
+      mse1[r] <- sum(sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1})) + mse1[r]
+    }
   }
-  
-  return(sum(mse1))
+  return(mse1)
 }
 
 
@@ -141,11 +153,17 @@ for (i in 1:K) {
   }
 }
 
+# samples <- matrix(sample(1:n_obs),ncol=n_obs/K)
+
+
 
 # Test functions for Cross-Validation on same  Folds for consistency
 
-sin <- svd(df1) # Scree plot
-plot(1:5, sin$d)
+# sin <- svd(df1) # Scree plot
+# plot(1:5, sin$d)
+
+# WrongPCA(df1, samples)
+# WrongPCAImproved(df1, samples)
 
 WrongPCA_err <- sapply(2:5, function(k){WrongPCA(df1, 1:k, samples)})
 WrongPCAImproved_err <- sapply(2:5, function(k){WrongPCAImproved(df1, 1:k, samples)})

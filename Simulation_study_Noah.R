@@ -1,7 +1,7 @@
 # This R file contains the simulation study conducted on different data sets
 # for the Methods Wrong CA and WrongPCAImproved implemented in the file
 # Implementation_PCA
-
+library(mvtnorm)
 
 
 
@@ -12,7 +12,7 @@ p <- 10
 mean_df <- rep(0, p)
 
 # mat <- matrix(runif(p*p, min = -20, 20), nrow = p, ncol = p)
-# mat <- matrix(rnorm(p*p, mean = 0, sd = 5), nrow = p, ncol = p)
+mat <- matrix(rnorm(p*p, mean = 0, sd = 5), nrow = p, ncol = p)
 # With mat computed as above: the following scree plots, i.e. look quite linear
 # Hence pca-information of a balanced base matrix is hard to influence by different kind of noise
 # Redundant information from scree plot and prcomp()
@@ -70,12 +70,13 @@ plot(1:p, sin_diff$d)
 
 
 # explicit test
-p <- rmvnorm(40, mean = c(0, 0), sigma = diag(c(1, 13)))
-plot(p[,1], p[,2], xlim = c(-4, 4), ylim = c(-20,20))
+p <- rmvnorm(40, mean = c(0, 0, 0), sigma = diag(c(1, 10, 13)))
+plot(p[,1], p[,2], xlim = c(-15, 15), ylim = c(-15,15))
 sin_p <- svd(p)
-plot(1:2, sin_p$d)
+plot(1:3, sin_p$d)
 pca1 <- prcomp(p)
 summary(pca1)
+p %*% pca1$rotation[,1:2]
 
 
 # R built-in function for PCA
