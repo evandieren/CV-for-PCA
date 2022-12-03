@@ -17,33 +17,16 @@ summary(pca3) # overview of the extent a variable explains the data
 pca3$sdev # array sorted by Principal components that explain % of standard deviation
 
 
-WrongPCA <- function(X, pca_vec, K){
-  # args: X matrix containing data, pca_vec containing index of pca (dimension r), K amount of CV-Folds
+WrongPCA <- function(X, pca_vec, samples){
+  # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
   # returns: MSE of the CV
   
-  n <- dim(X)[1]
-  p <- dim(X)[2]
-  index <- c(1:n)
-  K <- K
-  samples <- vector("list", K)
-  
-  for (i in 1:K) {
-    if (i < K) {
-      fold <- sample(index, n/K)
-      samples[[i]] <- fold
-      index <- index[-which(index %in% fold)]
-    }
-    else{
-      samples[[i]] <- index
-    }
-  }
-  # print(samples)
-  
+  K <- length(samples)
   mse <- rep(0, K)
   
   for (k in 1:K) {
     l1 <- length(samples[[k]])
-    df_k <- X[samples[[k]], ]
+    df_k_fold <- X[samples[[k]], ]
     
     svd_X <- svd(X)
     X_trunc <- svd_X$u[,pca_vec] %*% diag(svd_X$d[pca_vec]) %*% t(svd_X$v)[pca_vec,]
@@ -54,39 +37,25 @@ WrongPCA <- function(X, pca_vec, K){
     df_k_proj <- X_proj[samples[[k]],]
     
     # Error of estimated and true missing observation
-    mse <- sapply(1:l1, function(s){norm(df_k[s,] - df_k_proj[s,], type = "2")^2/l1/K})
+    mse[k] <- sum(sapply(1:l1, function(s){norm(df_k_fold[s,] - df_k_proj[s,], type = "2")^2/l1}))
+    # Error is ridiculous
+    # es <- df_k_proj
+    # es1 <- df_k_fold
   }
   return(sum(mse))
 }
 
-WrongPCA(df1, 1:3, 5)
 
-
-WrongPCAImproved <- function(X, pca_vec, K){
-  # args: X matrix containing data, pca_vec containing index of pca (dimension r), K amount of CV-Folds
+WrongPCAImproved <- function(X, pca_vec, samples){
+  # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
   # returns: MSE of the CV
   
-  n <- dim(X)[1]
-  p <- dim(X)[2]
-  index <- c(1:n)
-  K <- K
-  samples <- vector("list", K)
-  
-  for (i in 1:K) {
-    if (i < K) {
-      fold <- sample(index, n/K)
-      samples[[i]] <- fold
-      index <- index[-which(index %in% fold)]
-    }
-    else{
-      samples[[i]] <- index
-    }
-  }
+  K <- length(samples)
+  mse1 <- rep(0, K)
+  p <- ncol(X)
   
   # Split data into missing and observed data
   split <- sample(1:p, floor(p/2))
-  
-  mse1 <- rep(0, K)
   
   for (k in 1:K) {
     l1 <- length(samples[[k]])
@@ -107,53 +76,16 @@ WrongPCAImproved <- function(X, pca_vec, K){
     sigma_miss_obs <- sigma_trunc[split, -split]
     sigma_obs_obs <- sigma_trunc[-split, -split]
     
-    est_x_miss <- lapply(1:l1, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs)%*%(df_k_fold_obs[n,]-mu_obs)})
+    est_x_miss <- lapply(1:l1, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs, tol = 1e-20)%*%(df_k_fold_obs[n,]-mu_obs)})
     
     # Error of estimated and true missing observation
-    mse1 <- sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K})
+    mse1[k] <- sum(sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K}))
+    # Error is ridiculous
+    # es <- est_x_miss
+    # es1 <- df_k_fold_miss
   }
   
   return(sum(mse1))
-}
-
-WrongPCAImproved(df1, 1:2, 5)
-
-
-# Cross-Validation: "Missing Data Approach"
-
-# Split data into missing and observed data on jth component
-# e.g. split missing and observed data in half, or split variables randomly
-# splitting the data can be done for all variables regardless of r
-# split <- sample(1:p, ceiling(ratio)), ratio !< r
-split <- 1:ceiling(r/2)
-
-mse2 <- rep(0, K)
-
-for (k in 1:K) {
-  l1 <- length(samples[[k]])
-  
-  df_k <- df[-samples[[k]],]
-  mu <- colMeans(df_k)
-  svd_sigma <- svd(cov(df_k))
-  sigma_trunc <- svd_sigma$u[,-trunc] %*% diag(svd_sigma$d[-trunc]) %*% t(svd_sigma$u[,-trunc])
-
-  df_k_fold <- df[samples[[k]],]
-  df_k_fold_miss <- as.matrix(df_k_fold[,split])
-  df_k_fold_obs <- as.matrix(df_k_fold[,-split])
-  
-  # Estimate est_x_miss for df_k_fold_miss
-  mu_miss <- mu[split]
-  mu_obs <- mu[-split]
-  sigma_miss_obs <- sigma_trunc[split, -split]
-  sigma_obs_obs <- sigma_trunc[-split, -split]
-  
-  est_x_miss <- lapply(1:l1, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs)%*%(df_k_fold_obs[n,]-mu_obs)})
-  
-  # Error of estimated and true missing observation
-  for(s in 1:l1){
-    mse2[k] <- mse2[k] + norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1/K
-  }
-  
 }
 
 
@@ -168,16 +100,14 @@ KDEApproach <- function(X, pca_vec){
   return(norm(sigma-sigma_trunc, type = "F"))
 }
 
-KDEApproach(df1, 1:2)
-
 
 MatrixCompletion <- function(X, pca_vec){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r)
   # returns: error measure of truncated covariance to the real covariance (Frobenius norm)
   
   # Create bivariate index set for observed data
-  n <- dim(X)[1]
-  p <- dim(X)[2]
+  n <- nrow(X)
+  p <- ncol(X)
   biv_index <- matrix(sample(0:1, size = n*p, replace = T), nrow = n, ncol = p)
   
   # Iterative-hard thresholding algorithm
@@ -190,13 +120,46 @@ MatrixCompletion <- function(X, pca_vec){
   
   return(norm(X-M, type = "F"))
 }
-  
-MatrixCompletion(df1, 1:2)
 
 
 
+# Generate Folds for Cross-Validation
 
-# Question:
+K <- 5
+n <- nrow(df1)
+index <- c(1:n)
+samples <- vector("list", K)
+
+for (i in 1:K) {
+  if (i < K) {
+    fold <- sample(index, n/K)
+    samples[[i]] <- fold
+    index <- index[-which(index %in% fold)]
+  }
+  else{
+    samples[[i]] <- index
+  }
+}
+
+
+# Test functions for Cross-Validation on same  Folds for consistency
+
+sin <- svd(df1) # Scree plot
+plot(1:5, sin$d)
+
+debug(WrongPCA)
+
+WrongPCA_err <- sapply(2:5, function(k){WrongPCA(df1, 1:k, samples)})
+WrongPCAImproved_err <- sapply(2:5, function(k){WrongPCAImproved(df1, 1:k, samples)})
+plot(2:5, WrongPCA_err, "l", col = 1) # should return 0 for 5 but doesn't?
+lines(2:5, WrongPCAImproved_err, col = 2)
+
+KDEApproach_err <- sapply(2:5, function(n){KDEApproach(df1, 1:n)})
+MatrixCompletion_err <- sapply(2:5, function(n){MatrixCompletion(df1, 1:n)})
+plot(2:5, KDEApproach_err, "l", col = 1)
+plot(2:5, MatrixCompletion_err, col = 2)
+
+# Questions:
 
 # 25.11.22
 # How is r choosen? -> PCA first
@@ -209,7 +172,7 @@ MatrixCompletion(df1, 1:2)
 
 # ..
 # Method 0: Correctly implemented?
-# Method 0: tol = 1e-20
+# Method 0: tol = 1e-20?
 # Method 1: Splitting missing and observed data differently in Folds?
 # Method 4: When is convergence achieved? How to choose tolerance?
 

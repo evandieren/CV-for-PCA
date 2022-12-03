@@ -30,8 +30,8 @@ Final deadline : 22/12 to send
 <span style="color:gray">Eliott</span>
 
 * Find a multivariate Gaussian Data set <span style="color:brown">Emanuele</span>
-* Check Method0 - WrongPCA again <span style="color:orange">Noah</span>
-* Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span>
+* ~~Check Method0 - WrongPCA again <span style="color:orange">Noah</span>~~ still some questions left (Error is ridiculous)
+* ~~Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span>~~ still some questions left (Error is ridiculous)
 * Check Method2 - MissingData again <span style="color:gray">Eliott</span>
 * Check Method3 - KDEApproach again <span style="color:brown">Emanuele</span>
 * Check Method4 - MatrixCompletion <span style="color:gray">Eliott</span>
