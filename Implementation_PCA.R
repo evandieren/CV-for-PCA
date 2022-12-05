@@ -22,15 +22,15 @@ WrongPCA <- function(X, samples){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
   # returns: MSE of the CV
   
-  K <- length(samples)
+  K <- dim(samples)[2]
   p <- ncol(X)
   mse <- rep(0, p)
   
   for (r in 1:p) {
     for (k in 1:K) {
-      l1 <- length(samples[[k]])
-      df_k_fold <- X[samples[[k]], ]
-      df_k <- X[-samples[[k]],]
+      l1 <- length(samples[,k])
+      df_k_fold <- X[samples[,k], ]
+      df_k <- X[-samples[,k],]
       
       svd_X <- svd(df_k)
       a <- svd_X$u[,1:r]
@@ -66,7 +66,7 @@ WrongPCAImproved <- function(X, samples){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
   # returns: MSE of the CV
   
-  K <- length(samples)
+  K <- dim(samples)[2]
   p <- ncol(X)
   mse1 <- rep(0, p)
   
@@ -75,15 +75,15 @@ WrongPCAImproved <- function(X, samples){
   
   for (r in 1:p) {
     for (k in 1:K) {
-      l1 <- length(samples[[k]])
+      l1 <- length(samples[,k])
       
-      df_k <- X[-samples[[k]],]
+      df_k <- X[-samples[,k],]
       mu <- colMeans(df_k)
       svd_sigma <- svd(cov(df_k))
       svd_sigma$d[-(1:r)] <- 0
       sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v)
       
-      df_k_fold <- X[samples[[k]],]
+      df_k_fold <- X[samples[,k],]
       df_k_fold_miss <- as.matrix(df_k_fold[,split])
       df_k_fold_obs <- as.matrix(df_k_fold[,-split])
       
@@ -165,15 +165,15 @@ for (i in 1:K) {
 # WrongPCA(df1, samples)
 # WrongPCAImproved(df1, samples)
 
-WrongPCA_err <- sapply(2:5, function(k){WrongPCA(df1, 1:k, samples)})
-WrongPCAImproved_err <- sapply(2:5, function(k){WrongPCAImproved(df1, 1:k, samples)})
-plot(2:5, WrongPCA_err, "l", col = 1) # should return 0 for 5 but doesn't?
-lines(2:5, WrongPCAImproved_err, col = 2)
+#WrongPCA_err <- sapply(2:5, function(k){WrongPCA(df1, samples)})
+#WrongPCAImproved_err <- sapply(2:5, function(k){WrongPCAImproved(df1, samples)})
+#plot(2:5, WrongPCA_err, "l", col = 1) # should return 0 for 5 but doesn't?
+#lines(2:5, WrongPCAImproved_err, col = 2)
 
-KDEApproach_err <- sapply(2:5, function(n){KDEApproach(df1, 1:n)})
-MatrixCompletion_err <- sapply(2:5, function(n){MatrixCompletion(df1, 1:n)})
-plot(2:5, KDEApproach_err, "l", col = 1)
-plot(2:5, MatrixCompletion_err, col = 2)
+#KDEApproach_err <- sapply(2:5, function(n){KDEApproach(df1, 1:n)})
+#MatrixCompletion_err <- sapply(2:5, function(n){MatrixCompletion(df1, 1:n)})
+#plot(2:5, KDEApproach_err, "l", col = 1)
+#plot(2:5, MatrixCompletion_err, col = 2)
 
 
 # Questions:
