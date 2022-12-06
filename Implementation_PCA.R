@@ -123,13 +123,15 @@ MatrixCompletion <- function(X, pca_vec){
   biv_index <- matrix(sample(0:1, size = n*p, replace = T), nrow = n, ncol = p)
   
   # Iterative-hard thresholding algorithm
-  M <- X
-  for (i in 1:10) {
+  M_l <- matrix(rep(1, size = n*p), nrow = n, ncol = p)
+  tol = 1e-5
+  while(norm(X-M_l, type = "F")>tol){
     svd_M <- svd(M)
-    M_trunc <- svd_M$u[,pca_vec] %*% diag(svd_M$d[pca_vec]) %*% t(svd_M$v)[pca_vec,]
-    M <- X * biv_index + M_trunc * !biv_index
+    svd_M$d[-pca_vec] <- 0
+    M_trunc <- svd_M$u %*% diag(svd_M$d) %*% t(svd_M$v)
+    M_l <- X * biv_index + M_trunc * !biv_index
   }
-  
+
   return(norm(X-M, type = "F"))
 }
 

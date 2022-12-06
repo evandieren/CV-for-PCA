@@ -30,8 +30,8 @@ Final deadline : 22/12 to send
 <span style="color:gray">Eliott</span>
 
 * Find a multivariate Gaussian Data set <span style="color:brown">Emanuele</span>
-* ~~Check Method0 - WrongPCA again <span style="color:orange">Noah</span>~~ still some questions left (Error is ridiculous)
-* ~~Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span>~~ still some questions left (Error is ridiculous)
+* ~~Check Method0 - WrongPCA again <span style="color:orange">Noah</span>~~ DONE
+* ~~Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span>~~ DONE
 * Check Method2 - MissingData again <span style="color:gray">Eliott</span>
 * Check Method3 - KDEApproach again <span style="color:brown">Emanuele</span>
 * Check Method4 - MatrixCompletion <span style="color:gray">Eliott</span>
@@ -52,7 +52,7 @@ Final deadline : 22/12 to send
 
 ## 1. Introduction
 
-When dealing with modern large datasets, the observations' dimensionality often becomes a problem when dealing with interpretability of the dataset, or for its vizualisation, especially in a data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset. For example, PCA is often used to bring a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and identify clusters. It does so by computing Principal components from the dataset and projecting datapoints to this new basis.
+When dealing with modern large datasets, the observations' dimensionality often becomes a problem when dealing with interpretability of the dataset, or for its vizualisation, especially in a data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset. For example, PCA is often used to bring a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and identify clusters. It does so by computing Principal components from the dataset and then projecting datapoints to this new basis.
 
 Mathematically speaking, we can define principal components as an orthonormal basis of unit vectors which sequentially capture the most variance in the data. Practically, the PCs can be found with the following optimization problems for a given centered Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
 \[
@@ -82,9 +82,10 @@ knitr::include_graphics('./Figures/scree_plot_example.png')
 The Scree-plot method consists of choosing the value of $r$ which is the elbow of the graph as seen above. In this example, the optimal value of $r$ is $3$.
 
 ### 1.3 Simulation dataset description
-In order to compare different Cross-validation methods and the two other methods for finding $r$, the chosen simulation dataset will consist of a centered multivariate Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$ with a covariance matrix : ## ADD.
+In order to compare different Cross-validation methods and the two other methods for finding $r$, the chosen simulation dataset will consist of a centered multivariate Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$ with a covariance matrix defined as below : ## ADD.
 
-This choice of multivariate Gaussian is due to the constraints of implementation for methods described in [2. Cross-validation on PCA methods]. Without certain properties of Gaussian vectors, such as the conditional expectation for the first method would not give us closed form estimators.
+
+This choice of multivariate Gaussian is due to the constraints of implementation for methods described in [2. Cross-validation on PCA methods]. Without certain properties of Gaussian vectors, such as the expression conditional expectation from missed data given observed data (as seen in [2.2 Artificially turn the unsupervised problem into a supervised one]), certain methods would not be usable.
 
 ## 2. Cross-validation on PCA methods
 
@@ -237,11 +238,34 @@ mse2
 ```
 
 
-## 2.4 KDE modified approach
+### 2.4 KDE modified approach
 
 
-## 2.5 Matrix completion method
+### 2.5 Matrix completion method
 
+This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $X \in \mathbb{R}^{N\times p}$, but just that $X$ has a finite rank. Indeed, for a given data matrix $X$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $X$. The matrix completion method consists of finding a matrix $\mathbf M$ of rank $R$ such that :
+
+\[
+    \mathrm{arg \, min}_{\mathbf{M}=(M_{ij})_{i,j=1}^{N \times p}} \sum_{(i,j) \in \Omega} (X_{ij} - M_{ij})^2 \quad \mathrm{s.t.} \quad \mathrm{rank}(\mathbf M)=R
+    \]
+
+This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with respect to least-square error on the observed data. However, finding the solution of such a optimization problem is $NP$-hard, so one can use the following iterative algorithm to find local best candidates for the matrix $\mathbb M$ :
+
+
+  * Select an initial candidate $\mathbf{M}^{(0)}$
+  * Set $l=0$
+  * **while** $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2 > tol$:
+    - Compute the SVD of $\mathbf{M}^{(l)}$, i.e. $\mathbf{M}^{(l)} = UDV^T$
+    - Copy $D$ into $\widetilde{D}$ and set the $p-R$ diagonal elements of $\widetilde{D}$ to zero (truncating to rank $R$)
+    - Set $\widetilde{M} = U\widetilde{D}V^T$, the new matrix of rank $R$.
+    - Set $\mathbf{M}^{(l)}$as : 
+    \[
+      \mathbf{M}^{(l)} = \begin{cases} X_{ij} \quad \text{for } (i,j) \in \Omega \\
+                                       \widetilde{M}_{i,j} \quad \text{for } (i,j) \notin \Omega \end{cases}
+      \]
+  * **end while**
+  * return $l$
+    
 ## 3. Comparison of CV methods
 
 ## 4. Other dimension-reduction techniques and comparison with CV
