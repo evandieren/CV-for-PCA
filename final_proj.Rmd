@@ -34,7 +34,7 @@ Final deadline : 22/12 to send
 * ~~Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span>~~ DONE
 * Check Method2 - MissingData again <span style="color:gray">Eliott</span>
 * Check Method3 - KDEApproach again <span style="color:brown">Emanuele</span>
-* Check Method4 - MatrixCompletion <span style="color:gray">Eliott</span>
+* >~~Check Method4 - MatrixCompletion <span style="color:gray">Eliott</span>>~~ A verifier avec le prof car pas super clair sur certains points
 * Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots, use the same generated data for the different methods) - document along the way <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>
 * Rerun simulation study on real data set - document along the way <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>
 * Report:
@@ -252,10 +252,10 @@ This final methods is somehow a bit more general, as we do not need to assume an
 This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with respect to least-square error on the observed data. However, finding the solution of such a optimization problem is $NP$-hard, so one can use the following iterative algorithm to find local best candidates for the matrix $\mathbb M$ :
 
 
-  * Select an initial candidate $\mathbf{M}^{(0)}$
-  * Set $l=0$
-  * **while** $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2 > tol$:
-    - Compute the SVD of $\mathbf{M}^{(l)}$, i.e. $\mathbf{M}^{(l)} = UDV^T$
+  * Select an initial candidate $\mathbf{M}^{(0)}$ (here $\mathbf{M}^{(0)} = X$)
+  * Set $l=1$
+  * **do**
+    - Compute the SVD of $\mathbf{M}^{(l-1)}$, i.e. $\mathbf{M}^{(l-1)} = UDV^T$
     - Copy $D$ into $\widetilde{D}$ and set the $p-R$ diagonal elements of $\widetilde{D}$ to zero (truncating to rank $R$)
     - Set $\widetilde{M} = U\widetilde{D}V^T$, the new matrix of rank $R$.
     - Set $\mathbf{M}^{(l)}$as : 
@@ -263,8 +263,8 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with
       \mathbf{M}^{(l)} = \begin{cases} X_{ij} \quad \text{for } (i,j) \in \Omega \\
                                        \widetilde{M}_{i,j} \quad \text{for } (i,j) \notin \Omega \end{cases}
       \]
-  * **end while**
-  * return $l$
+  * **while $||M^{(l)}-M^{(l-1)}||_2> tol$**:
+  * Store the error $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment with different values of $R$. Pick the $R$ which gives the lowest error.
     
 ## 3. Comparison of CV methods
 
