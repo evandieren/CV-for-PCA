@@ -407,7 +407,10 @@ Real world data? - Gaussian with (Gaussian) noise
 <li><p><del>Check Method1 - WrongPCAImproved again <span style="color:orange">Noah</span></del> DONE</p></li>
 <li><p>Check Method2 - MissingData again <span style="color:gray">Eliott</span></p></li>
 <li><p>Check Method3 - KDEApproach again <span style="color:brown">Emanuele</span></p></li>
-<li><p>Check Method4 - MatrixCompletion <span style="color:gray">Eliott</span></p></li>
+<li><blockquote>
+<p><del>Check Method4 - MatrixCompletion <span style="color:gray">Eliott</span>&gt;</del> A verifier avec le prof car
+pas super clair sur certains points</p>
+</blockquote></li>
 <li><p>Run simulation study on synthesized data (- Emphasize on noise,
 correlation, hyperparameter r, comparing with elbow plots, use the same
 generated data for the different methods) - document along the way <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span></p></li>
@@ -637,12 +640,11 @@ problem is <span class="math inline">\(NP\)</span>-hard, so one can use
 the following iterative algorithm to find local best candidates for the
 matrix <span class="math inline">\(\mathbb M\)</span> :</p>
 <ul>
-<li>Select an initial candidate <span class="math inline">\(\mathbf{M}^{(0)}\)</span></li>
-<li>Set <span class="math inline">\(l=0\)</span></li>
-<li><strong>while</strong> <span class="math inline">\(\sum_{(i,j) \in
-\Omega} (X_{ij} - M^{(l)}_{ij})^2 &gt; tol\)</span>:
+<li>Select an initial candidate <span class="math inline">\(\mathbf{M}^{(0)}\)</span> (here <span class="math inline">\(\mathbf{M}^{(0)} = X\)</span>)</li>
+<li>Set <span class="math inline">\(l=1\)</span></li>
+<li><strong>do</strong>
 <ul>
-<li>Compute the SVD of <span class="math inline">\(\mathbf{M}^{(l)}\)</span>, i.e. <span class="math inline">\(\mathbf{M}^{(l)} = UDV^T\)</span></li>
+<li>Compute the SVD of <span class="math inline">\(\mathbf{M}^{(l-1)}\)</span>, i.e. <span class="math inline">\(\mathbf{M}^{(l-1)} = UDV^T\)</span></li>
 <li>Copy <span class="math inline">\(D\)</span> into <span class="math inline">\(\widetilde{D}\)</span> and set the <span class="math inline">\(p-R\)</span> diagonal elements of <span class="math inline">\(\widetilde{D}\)</span> to zero (truncating to rank
 <span class="math inline">\(R\)</span>)</li>
 <li>Set <span class="math inline">\(\widetilde{M} =
@@ -654,8 +656,13 @@ U\widetilde{D}V^T\)</span>, the new matrix of rank <span class="math inline">\(R
 (i,j) \notin \Omega \end{cases}
 \]</span></li>
 </ul></li>
-<li><strong>end while</strong></li>
-<li>return <span class="math inline">\(l\)</span></li>
+<li><strong>while <span class="math inline">\(||M^{(l)}-M^{(l-1)}||_2&gt;
+tol\)</span></strong>:</li>
+<li>Store the error <span class="math inline">\(\sum_{(i,j) \in \Omega}
+(X_{ij} - M^{(l)}_{ij})^2\)</span> and then repeat this experiment with
+different values of <span class="math inline">\(R\)</span>. Pick the
+<span class="math inline">\(R\)</span> which gives the lowest
+error.</li>
 </ul>
 </div>
 </div>

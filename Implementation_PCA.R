@@ -123,16 +123,19 @@ MatrixCompletion <- function(X, pca_vec){
   biv_index <- matrix(sample(0:1, size = n*p, replace = T), nrow = n, ncol = p)
   
   # Iterative-hard thresholding algorithm
-  M_l <- matrix(rep(1, size = n*p), nrow = n, ncol = p)
+  M_old <- matrix(rep(1, size = n*p), nrow = n, ncol = p)
+  M_l <- X
   tol = 1e-5
-  while(norm(X-M_l, type = "F")>tol){
-    svd_M <- svd(M)
+  while(norm(M_l-M_old, type = "F")>tol){
+    #print("test")
+    M_old = M_l
+    svd_M <- svd(M_old)
     svd_M$d[-pca_vec] <- 0
     M_trunc <- svd_M$u %*% diag(svd_M$d) %*% t(svd_M$v)
     M_l <- X * biv_index + M_trunc * !biv_index
   }
 
-  return(norm(X-M, type = "F"))
+  return(norm(X-M_l, type = "F"))
 }
 
 
@@ -155,6 +158,8 @@ for (i in 1:K) {
   }
 }
 
+#MatrixCompletion(df1, 1:1)
+
 # samples <- matrix(sample(1:n_obs),ncol=n_obs/K)
 
 
@@ -173,10 +178,12 @@ for (i in 1:K) {
 #lines(2:5, WrongPCAImproved_err, col = 2)
 
 #KDEApproach_err <- sapply(2:5, function(n){KDEApproach(df1, 1:n)})
-#MatrixCompletion_err <- sapply(2:5, function(n){MatrixCompletion(df1, 1:n)})
-#plot(2:5, KDEApproach_err, "l", col = 1)
-#plot(2:5, MatrixCompletion_err, col = 2)
+MatrixCompletion_err <- sapply(1:5, function(n){MatrixCompletion(df1, 1:n)})
+#View(MatrixCompletion_err)
+#plot(1:5, KDEApproach_err, "l", col = 1)
+plot(1:5, log(MatrixCompletion_err),type="l", col = 2)
 
+print(which.min(MatrixCompletion_err))
 
 # Questions:
 
