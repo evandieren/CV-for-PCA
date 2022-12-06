@@ -1,5 +1,4 @@
 library(MASS)
-
 # create data vectors
 sample_size <- 1000                                       
 sample_meanvector <- c(10, -2, 5, 10, 20)                                   
