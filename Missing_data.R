@@ -3,18 +3,15 @@ library(mvtnorm)
 library(MASS)
 library(psych)
 
-df_df <- data.frame("obs1"=c(5,43,2,3,1,4,8,4,5,9), "obs2"=c(5,43,2,3,1,4,8,4,5,9), "obs3"=c(1,2,5,3,4,5,6,1,5,7), "obs4"=c(1,7,6,3,4,5,6,1,7,10))
-df <- as.matrix(df_df)
 
-
-# Create Multivariate Random Variables
 
 EM_MissingData <- function(X, matrix_miss){
-
+  # X is data without kth fold
+  # matrix_miss rowwise index of values missing in every observations
+  
+  # Initial stuff
   n <- nrow(X)
   p <- ncol(X)
-  
-  # Set inital
   mu <- rep(0, p)
   sigma <- matrix(rep(1, p*p), nrow=p)
   
@@ -24,34 +21,35 @@ EM_MissingData <- function(X, matrix_miss){
     X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(-index_miss,-index_miss, tol=1e-20)%*%(mu[-index_miss]-X[-index_miss])
   }
   
+  # Convergence stuff
   tol <- 1e-5
   l_comp <- Inf
-  # maybe modify to use tr()
   l_comp_next <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*sum(sapply(1:n, function(m){tr(outer(X[m,], X[m,])%*%ginv(sigma, tol=1e-20))}))
+  
   while(abs(l_comp_next - l_comp)>tol){
     # Utility variable
     var <- sum(sapply(1:n, function(m){tr(outer(X[m,], X[m,])%*%ginv(sigma, tol=1e-20))}))
     outer <- lapply(1:n, )
     
-    # estimate missing values
+    # E-Step
     for (i in 1:n){
       index_miss <- matrix_miss[i,]
       X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(-index_miss,-index_miss, tol=1e-20)%*%(mu[-index_miss]-X[-index_miss])
     }
-    # Compute E-Step
     Q <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*var
     
-    # Update parameters
+    # M-step
     mu <- colMeans(X)
-    sigma <- Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)})) + 
+    # sigma <- Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)})) + C , where C need to be defined
     
-    # Calculate likelihood for convergence
+    # Likelihood for convergence
     l_comp <- l_comp_next
     l_comp_next <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*sum(sapply(1:n, function(m){tr(outer(X[m,], X[m,])%*%ginv(sigma, tol=1e-20))}))
     
   }
   return(list(mu, sigma))
 }
+
 
 
 MissingData <- function(X, folds){
@@ -61,10 +59,11 @@ MissingData <- function(X, folds){
   n <- nrow(X)
   p <- ncol(X)
   K <- ncol(folds)
-  #index_miss <- sample(1:p, floor(p/2))
-  #index_obs <- (1:p)[-index_miss]
-  
-  matrix_miss < matrix(sample(1:p, n*floor(p/2), replace=T), nrow=n)
+
+  # Activate following line for EM
+  # matrix_miss < matrix(sample(1:p, n*floor(p/2), replace=T), nrow=n)
+  index_miss <- sample(1:p, floor(p/2))
+  index_obs <- (1:p)[-index_miss]
   
   mse2 <- rep(0, p)
   for (r in 1:p) {
@@ -108,4 +107,3 @@ df1 <- rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat))
 df1 <- as.matrix(df1)
 folds <- matrix(sample(1:n),ncol=K)
 MissingData(df1, folds)
-a <- list(mat, df1)
