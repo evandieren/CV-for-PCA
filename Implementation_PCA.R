@@ -46,14 +46,11 @@ WrongPCA <- function(X, samples){
       
       # Define projection and project data
       P <- U%*%t(U)
-      # X_trunc%*% solve(t(X_trunc) %*% X_trunc, tol = 1e-20) %*% t(X_trunc)
       df_k_proj <- P %*% t(df_k_fold)
 
       # Error of estimated and true missing observation
       mse[r] <- sum(sapply(1:l1, function(s){norm(df_k_fold[s,] - df_k_proj[,s], type = "2")^2/l1})) + mse[r]
-      # Error is ridiculous
-      # es <- df_k_proj
-      # es1 <- df_k_fold
+
     }
   }
   

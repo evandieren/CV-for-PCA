@@ -1,70 +1,104 @@
 # mvtnorm provides possibility to create multivariate gaussian rv
 library(mvtnorm)
+library(MASS)
 
 df_df <- data.frame("obs1"=c(5,43,2,3,1,4,8,4,5,9), "obs2"=c(5,43,2,3,1,4,8,4,5,9), "obs3"=c(1,2,5,3,4,5,6,1,5,7), "obs4"=c(1,7,6,3,4,5,6,1,7,10))
 df <- as.matrix(df_df)
 
 
 # Create Multivariate Random Variables
-sigma <- matrix(c(5,43,2,3,1,4,8,4,5,9,5,43,2,3,1,4,8,4,5,9,5,43,2,3,1), nrow = 5, ncol = 5)
-df1 <- rmvnorm(n = 20, mean = rep(0, nrow(sigma)), sigma = sigma %*% t(sigma))
 
-EM_MissingData <- function(X){
-  # X has missing values
-  N <- nrow(X)
+EM_MissingData <- function(X, matrix_miss){
+
+  n <- nrow(X)
+  p <- ncol(X)
   
-  mu <- colMeans(X)/N
+  # Set inital
+  mu <- rep(0, p)
+  sigma <- matrix(rep(1, p*p), nrow=p)
   
-  tol <- Inf
+  #Calculate missing values
+  for (i in 1:n){
+    index_miss <- matrix_miss[i,]
+    X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(-index_miss,-index_miss, tol=1e-20)%*%(mu[-index_miss]-X[-index_miss])
+  }
   
-  
+  tol <- 1e-5
+  l_comp <- Inf
+  # maybe modify to use tr()
+  l_comp_next <- -N/2*log(det(ginv(sigma, tol=1e-20))) + sum(sapply(1:n, function(m){t(X[m,]-mu)%*%ginv(sigma, tol=1e-20)}%*%(X[m,]-mu)))
+  while(abs(l_comp_next - l_comp)>tol){
+    # estimate missing values
+    for (i in 1:n){
+      index_miss <- matrix_miss[i,]
+      X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(-index_miss,-index_miss, tol=1e-20)%*%(mu[-index_miss]-X[-index_miss])
+    }
+    # Compute E-Step
+    
+    # Update parameters
+    mu <- colMeans(X)
+    
+    # Calculate likelihood for convergence
+    l_comp <- l_comp_next
+    l_comp_next <- -N/2*log(det(ginv(sigma, tol=1e-20))) + sum(sapply(1:n, function(m){t(X[m,]-mu)%*%ginv(sigma, tol=1e-20)}%*%(X[m,]-mu)))
+    
+  }
+  return(list(mu, sigma))
 }
 
 
-MissingData <- function(X, pca_vec, K){
+MissingData <- function(X, folds){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), K amount of CV-Folds
   # returns: MSE of the CV
 
-  K <- K
-  n_obs <- dim(X)[1]
-  dim_x <- dim(X)[2]
-  # pca_vec <- 1:r
-  pca_vec <- 1:length(pca_vec)
+  n <- nrow(X)
+  p <- ncol(X)
+  K <- ncol(folds)
+  #index_miss <- sample(1:p, floor(p/2))
+  #index_obs <- (1:p)[-index_miss]
   
-  # Looks clean but I think observations can go missing, Maybe choosing ncol = K, is even smoother
-  # maybe list where truncating sample(1:n_obs) on every between k, k+1 can also be implemented nicely
-  folds <- matrix(sample(1:n_obs),ncol=n_obs/K)
+  matrix_miss < matrix(sample(1:p, n*floor(p/2), replace=T), nrow=n)
   
-  mse2 <- rep(0, K)
-  for (k in 1:K) {
-    # n_fold <- length(folds[k]) How does that work if folds is a Matrix? slice [k,] instead?
-    n_fold <- length(folds[k,])
-    df_k <- X[-folds[k,],]
-    
-    mu <- colMeans(df_k)
-    eigen_sigma <- eigen(cov(df_k))
-    eigen_sigma$values[-pca_vec] <- 0 # truncation of the p-r last eigenvalues
-    eigen_sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors)
-    
-    df_fold <- X[folds[k,],]
-    index_miss <- sample(1:dim_x, floor(dim_x/2))
-    index_obs <- (1:dim_x)[-index_miss]
-    
-    mu_miss <- mu[index_miss]
-    mu_obs <- mu[index_obs]
-    sigma_miss_obs <- eigen_sigma_trunc[index_miss, index_obs]
-    sigma_obs_obs <- eigen_sigma_trunc[index_obs, index_obs]
-    
-    # Set tol = 1e-20 to reduce computational issues manually, don't know though if we allow sth that shouldn't be permitted
-    est_x_miss <- lapply(1:n_fold, function(n){mu_miss+sigma_miss_obs%*%solve(sigma_obs_obs, tol = 1e-20)%*%(df_fold[n,index_obs]-mu_obs)})
-    
-    # est_x_miss is a list so substracting from a matrix won't be possible
-    # mse2[k] <- sum((est_x_miss-df_fold[,index_miss])^2)/(n_fold*dim_x) # Normalize with dimension?
-    mse2 <- sapply(1:n_fold, function(s){norm(est_x_miss[[s]]-df_fold[s,index_miss], type = "2")^2/(n_fold*dim_x)})
+  mse2 <- rep(0, p)
+  for (r in 1:p) {
+    for (k in 1:K) {
+
+      n_fold <- length(folds[,k])
+      df_k <- X[-folds[,k],]
+      
+      # EM-Algorithm to find sigma
+      
+      
+      mu <- colMeans(df_k)
+      eigen_sigma <- eigen(cov(df_k))
+      eigen_sigma$values[-c(1:r)] <- 0 # truncation of the p-r last eigenvalues
+      eigen_sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors)
+      
+      df_fold <- X[folds[,k],]
+      
+      mu_miss <- mu[index_miss]
+      mu_obs <- mu[index_obs]
+      sigma_miss_obs <- eigen_sigma_trunc[index_miss, index_obs]
+      sigma_obs_obs <- eigen_sigma_trunc[index_obs, index_obs]
+      
+      # Set tol = 1e-20 to reduce computational issues manually, don't know though if we allow sth that shouldn't be permitted
+      est_x_miss <- lapply(1:n_fold, function(n){mu_miss+sigma_miss_obs%*%ginv(sigma_obs_obs, tol = 1e-20)%*%(df_fold[n,index_obs]-mu_obs)})
+      
+      # est_x_miss is a list so substracting from a matrix won't be possible
+      # mse2[k] <- sum((est_x_miss-df_fold[,index_miss])^2)/(n_fold*dim_x) # Normalize with dimension?
+      mse2[r] <- sum(sapply(1:n_fold, function(s){norm(est_x_miss[[s]]-df_fold[s,index_miss], type = "2")^2/n_fold})) + mse2[r]
+    }
   }
   
-  return(sum(mse2))
+  return(mse2)
 }
 
-MissingData(df1, 1:2, 5)
-
+n <- 1000
+p <- 15
+K <- 10
+mat <- matrix(rnorm(p*p, mean = 0, sd = 12), nrow = p, ncol = p)
+df1 <- rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat))
+df1 <- as.matrix(df1)
+folds <- matrix(sample(1:n),ncol=K)
+MissingData(df1, folds)
+a <- list(mat, df1)
