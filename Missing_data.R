@@ -3,8 +3,6 @@ library(mvtnorm)
 library(MASS)
 library(psych)
 
-
-
 EM_MissingData <- function(X, matrix_miss){
   # X is data without kth fold
   # matrix_miss rowwise index of values missing in every observations
@@ -36,11 +34,13 @@ EM_MissingData <- function(X, matrix_miss){
       index_miss <- matrix_miss[i,]
       X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(-index_miss,-index_miss, tol=1e-20)%*%(mu[-index_miss]-X[-index_miss])
     }
-    Q <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*var
+    # C <- 
+    #Q <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*tr(Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)%*%ginv(sigma, tol=1e-20)}))) -1/2*tr(C%*%sigma)
     
     # M-step
     mu <- colMeans(X)
-    # sigma <- Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)})) + C , where C need to be defined
+    # sum_c
+    # sigma <- Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)})) + sum_c , where C need to be defined
     
     # Likelihood for convergence
     l_comp <- l_comp_next
@@ -60,7 +60,7 @@ MissingData <- function(X, folds){
   p <- ncol(X)
   K <- ncol(folds)
 
-  # Activate following line for EM
+  # Activate following line for EM and adapt rest of Algo
   # matrix_miss < matrix(sample(1:p, n*floor(p/2), replace=T), nrow=n)
   index_miss <- sample(1:p, floor(p/2))
   index_obs <- (1:p)[-index_miss]
@@ -73,7 +73,6 @@ MissingData <- function(X, folds){
       df_k <- X[-folds[,k],]
       
       # EM-Algorithm to find sigma
-      
       
       mu <- colMeans(df_k)
       eigen_sigma <- eigen(cov(df_k))

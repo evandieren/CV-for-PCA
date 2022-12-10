@@ -3,21 +3,6 @@ library(mvtnorm)
 library(MASS)
 
 
-# df_df <- data.frame("obs1"=c(5,43,2,3,1,4,8,4,5,9), "obs2"=c(5,43,2,3,1,4,8,4,5,9), "obs3"=c(1,2,5,3,4,5,6,1,5,7), "obs4"=c(1,7,6,3,4,5,6,1,7,10))
-# df <- as.matrix(df_df)
-
-
-# Create Multivariate Random Variables
-sigma <- matrix(c(5,43,2,3,1,4,8,4,5,9,5,43,2,3,1,4,8,4,5,9,5,43,2,3,1), nrow = 5, ncol = 5)
-df1 <- rmvnorm(n = 20, mean = rep(0, nrow(sigma)), sigma = sigma %*% t(sigma))
-
-
-# R built-in function for PCA
-pca3 <- prcomp(df1, rank. = 5)
-summary(pca3) # overview of the extent a variable explains the data
-pca3$sdev # array sorted by Principal components that explain % of standard deviation
-
-
 WrongPCA <- function(X, samples){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
   # returns: MSE of the CV
@@ -33,15 +18,8 @@ WrongPCA <- function(X, samples){
       df_k <- X[-samples[,k],]
       
       svd_X <- svd(df_k)
-      a <- svd_X$u[,1:r]
-      if (r==1){
-        b <- as.matrix(svd_X$d[1:r])
-      }
-      else{
-        b <- diag(svd_X$d[1:r])
-      }
-      c <- t(svd_X$v)[1:r,]
-      X_trunc <- a %*% b %*% c
+      svd_X$d[-(1:r)] <- 0
+      X_trunc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v)
       U <- prcomp(X_trunc,rank.=r)$rotation
       
       # Define projection and project data
@@ -53,10 +31,8 @@ WrongPCA <- function(X, samples){
 
     }
   }
-  
   return(mse)
 }
-
 
 
 WrongPCAImproved <- function(X, samples){
@@ -98,89 +74,79 @@ WrongPCAImproved <- function(X, samples){
 }
 
 
-KDEApproach <- function(X, pca_vec){
-  # args: X matrix containing data, pca_vec containing index of pca (dimension r)
+KDEApproach <- function(X){
+  # args: X matrix containing data
   # returns: error measure of truncated covariance to the real covariance (Frobenius norm)
   
-  sigma <- cov(X)
-  svd_sigma <- svd(sigma)
-  sigma_trunc <- svd_sigma$u[,pca_vec] %*% diag(svd_sigma$d[pca_vec]) %*% t(svd_sigma$v)[pca_vec,]
+  p <- ncol(X)
+  mse4 <- rep(0,p)
   
-  return(norm(sigma-sigma_trunc, type = "F"))
+  for (r in 1:p) {
+    sigma <- cov(X)
+    svd_sigma <- svd(sigma)
+    svd_sigma$d[-(1:r)] <- 0
+    sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v)
+    mse4[r] <- norm(sigma-sigma_trunc, type = "F")
+  }
+  return(mse4)
 }
 
 
-MatrixCompletion <- function(X, pca_vec){
-  # args: X matrix containing data, pca_vec containing index of pca (dimension r)
+MatrixCompletion <- function(X){
+  # args: X matrix containing data
   # returns: error measure of truncated covariance to the real covariance (Frobenius norm)
   
   # Create bivariate index set for observed data
   n <- nrow(X)
   p <- ncol(X)
+  mse5 <- rep(0, p)
   biv_index <- matrix(sample(0:1, size = n*p, replace = T), nrow = n, ncol = p)
-  
+
   # Iterative-hard thresholding algorithm
-  M_old <- matrix(rep(1, size = n*p), nrow = n, ncol = p)
-  M_l <- X
-  tol = 1e-5
-  while(norm(M_l-M_old, type = "F")>tol){
-    #print("test")
-    M_old = M_l
-    svd_M <- svd(M_old)
-    svd_M$d[-pca_vec] <- 0
-    M_trunc <- svd_M$u %*% diag(svd_M$d) %*% t(svd_M$v)
-    M_l <- X * biv_index + M_trunc * !biv_index
+  tol = 1e-2
+  for (r in 1:p) {
+    steps <- 0
+    M_old <- matrix(rep(1, size = n*p), nrow = n, ncol = p)
+    M_new <- X
+    while(norm(M_new-M_old, type = "F")>tol){
+      M_old = M_new
+      svd_M <- svd(M_old)
+      svd_M$d[-(1:r)] <- 0
+      M_trunc <- svd_M$u %*% diag(svd_M$d) %*% t(svd_M$v)
+      M_new <- X * biv_index + M_trunc * !biv_index
+      steps <- steps + 1
+    }
+    print(paste0("MatrixCompletion: Steps ", steps, ", for rank r ", r))
+    mse5[r] <- norm(X-M_new, type = "F")
   }
-
-  return(norm(X-M_l, type = "F"))
+  return(mse5)
 }
 
 
 
-# Generate Folds for Cross-Validation
+# Testing Algorithms - seem to work so far
 
-K <- 5
-n <- nrow(df1)
-index <- c(1:n)
-samples <- vector("list", K)
-
-for (i in 1:K) {
-  if (i < K) {
-    fold <- sample(index, n/K)
-    samples[[i]] <- fold
-    index <- index[-which(index %in% fold)]
-  }
-  else{
-    samples[[i]] <- index
-  }
-}
-
-#MatrixCompletion(df1, 1:1)
-
-# samples <- matrix(sample(1:n_obs),ncol=n_obs/K)
+# n <- 100
+# p <- 10
+# K <- 10
+# mean_df <- rep(0, p)
+# mat <- matrix(rnorm(p*p, mean = 0, sd = 12), nrow = p, ncol = p)
+# df <- rmvnorm(n = n, mean = mean_df, sigma = mat %*% t(mat))
+# samples <- matrix(sample(1:n),ncol=K)
+# 
+# WrongPCA(df, samples)
+# WrongPCAImproved(df, samples)
+# MatrixCompletion(df)
+# KDEApproach(df)
 
 
 
-# Test functions for Cross-Validation on same  Folds for consistency
 
-# sin <- svd(df1) # Scree plot
-# plot(1:5, sin$d)
 
-# WrongPCA(df1, samples)
-# WrongPCAImproved(df1, samples)
 
-#WrongPCA_err <- sapply(2:5, function(k){WrongPCA(df1, samples)})
-#WrongPCAImproved_err <- sapply(2:5, function(k){WrongPCAImproved(df1, samples)})
-#plot(2:5, WrongPCA_err, "l", col = 1) # should return 0 for 5 but doesn't?
-#lines(2:5, WrongPCAImproved_err, col = 2)
 
-#KDEApproach_err <- sapply(2:5, function(n){KDEApproach(df1, 1:n)})
-MatrixCompletion_err <- sapply(1:5, function(n){MatrixCompletion(df1, 1:n)})
-#View(MatrixCompletion_err)
-#plot(1:5, KDEApproach_err, "l", col = 1)
-plot(1:5, log(MatrixCompletion_err),type="l", col = 2)
 
-print(which.min(MatrixCompletion_err))
+
 
 # Questions:
 
