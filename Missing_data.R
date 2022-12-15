@@ -7,7 +7,11 @@ EM_MissingData <- function(X, matrix_miss){
   # X is data without kth fold
   # matrix_miss rowwise index of values missing in every observations
   
+  # Ginv(sigma)
+  
+  
   # Initial stuff
+  X_old <- X
   n <- nrow(X)
   p <- ncol(X)
   mu <- rep(0, p)
@@ -16,35 +20,36 @@ EM_MissingData <- function(X, matrix_miss){
   #Calculate missing values
   for (i in 1:n){
     index_miss <- matrix_miss[i,]
-    X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(-index_miss,-index_miss, tol=1e-20)%*%(mu[-index_miss]-X[-index_miss])
+    X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(sigma[-index_miss,-index_miss], tol=1e-20)%*%(X[i,-index_miss]-mu[-index_miss])
   }
   
   # Convergence stuff
   tol <- 1e-5
   l_comp <- Inf
-  l_comp_next <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*sum(sapply(1:n, function(m){tr(outer(X[m,], X[m,])%*%ginv(sigma, tol=1e-20))}))
+  l_comp_next <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*sum(sapply(1:n, function(m){tr(outer(X[m,]-mu, X[m,]-mu)%*%ginv(sigma, tol=1e-20))}))
   
   while(abs(l_comp_next - l_comp)>tol){
     # Utility variable
     var <- sum(sapply(1:n, function(m){tr(outer(X[m,], X[m,])%*%ginv(sigma, tol=1e-20))}))
-    outer <- lapply(1:n, )
+
+    # Ginv(sigma)
+    
     
     # E-Step
     for (i in 1:n){
       index_miss <- matrix_miss[i,]
-      X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(-index_miss,-index_miss, tol=1e-20)%*%(mu[-index_miss]-X[-index_miss])
+      X[i,index_miss] <- mu[index_miss] + sigma[index_miss,-index_miss]%*%ginv(sigma[-index_miss,-index_miss], tol=1e-20)%*%(X[i,-index_miss]-mu[-index_miss])
     }
     # C <- 
-    #Q <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*tr(Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)%*%ginv(sigma, tol=1e-20)}))) -1/2*tr(C%*%sigma)
+    #Q <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*tr(Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)%*%ginv(sigma, tol=1e-20)}))) -1/2*tr(C%*%ginv(sigma, tol=1e-20))
     
     # M-step
     mu <- colMeans(X)
-    # sum_c
-    # sigma <- Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)})) + sum_c , where C need to be defined
+    # sigma <- Reduce("+", lapply(1:n, function(m){outer(X[m,]-mu, X[m,]-mu)})) + C , where C need to be defined
     
     # Likelihood for convergence
     l_comp <- l_comp_next
-    l_comp_next <- -N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*sum(sapply(1:n, function(m){tr(outer(X[m,], X[m,])%*%ginv(sigma, tol=1e-20))}))
+    l_comp_next <- +N/2*log(det(ginv(sigma, tol=1e-20))) - 1/2*sum(sapply(1:n, function(m){tr(outer(X[m,], X[m,])%*%ginv(sigma, tol=1e-20))}))
     
   }
   return(list(mu, sigma))
@@ -59,11 +64,6 @@ MissingData <- function(X, folds){
   n <- nrow(X)
   p <- ncol(X)
   K <- ncol(folds)
-
-  # Activate following line for EM and adapt rest of Algo
-  # matrix_miss < matrix(sample(1:p, n*floor(p/2), replace=T), nrow=n)
-  index_miss <- sample(1:p, floor(p/2))
-  index_obs <- (1:p)[-index_miss]
   
   mse2 <- rep(0, p)
   for (r in 1:p) {
@@ -72,7 +72,10 @@ MissingData <- function(X, folds){
       n_fold <- length(folds[,k])
       df_k <- X[-folds[,k],]
       
-      # EM-Algorithm to find sigma
+      # Activate following line for EM and adapt rest of Algo
+      # matrix_miss < matrix(sample(1:p, n*floor(p/2), replace=T), nrow=n)
+      index_miss <- sample(1:p, floor(p/2))
+      index_obs <- (1:p)[-index_miss]
       
       mu <- colMeans(df_k)
       eigen_sigma <- eigen(cov(df_k))
