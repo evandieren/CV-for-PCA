@@ -8,11 +8,12 @@ source("Implementation_PCA.R")
 # Simulation study on cov matrix(rnorm(p*p, mean = 0, sd = 12), nrow = p, ncol = p)
 # !!! Takes a while to compute, reduce n and sim for faster overview
 
-n <- 1000
-p <- 15
+n <- 200
+p <- 5
+K = 5
 mean_df <- rep(0, p)
 
-sim <- 5
+sim <- 2
 lsEigen <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsWrongPCA <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsWrongPCAImproved <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
@@ -20,22 +21,21 @@ lsKDEApproach <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplif
 lsMatrixCompletion <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 
 for (i in 1:sim) {
-  K = 10
   samples <- matrix(sample(1:n),ncol=K)
   
   # mat <- matrix(runif(p*p, min = -20, 20), nrow = p, ncol = p)
-  mat <- matrix(rnorm(p*p, mean = 0, sd = 12), nrow = p, ncol = p)
+  mat <- matrix(rnorm(p*p, mean = 0, sd = 1), nrow = p, ncol = p)
   df <- rmvnorm(n = n, mean = mean_df, sigma = mat %*% t(mat))
   
   # Gaussian data with uniform "high noise", "low noise", differing noise, increasing noise
   df_uni_high_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(50, p)))
   df_uni_low_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(2.2, p)))
-  df_diff_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(runif(n = p, min = 0, max = 1000)))
-  df_incr_noise <- df + rmvnorm(n=n, mean=mean_df, sigma=diag(c(1:p)^2))
+  df_diff_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(runif(n = p, min = 0, max = 10)))
+  df_incr_noise <- df + rmvnorm(n=n, mean=mean_df, sigma=diag(c(1:p)))
   data <- list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise, "Increasing noise"=df_incr_noise)
   
   for (da in 1:length(data)) {
-    sin <- svd(data[[da]])
+    sin <- svd(data[[da]]) # svd because of asymmetric data set
     lsEigen[[da]][i,] <- sin$d
     lsWrongPCA[[da]][i,] <- WrongPCA(data[[da]], samples)
     lsWrongPCAImproved[[da]][i,] <- WrongPCAImproved(data[[da]], samples)

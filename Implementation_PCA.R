@@ -48,13 +48,13 @@ WrongPCAImproved <- function(X, samples){
   
   for (r in 1:p) {
     for (k in 1:K) {
-      l1 <- length(samples[,k])
+      l1 <- length(samples[,k]) # number of elements in the fold
       
-      df_k <- X[-samples[,k],]
-      mu <- colMeans(df_k)
-      svd_sigma <- svd(cov(df_k))
+      df_k <- X[-samples[,k],] ## all observations except the fold
+      mu <- colMeans(df_k) # mu without fold
+      svd_sigma <- svd(cov(df_k)) # eigen here
       svd_sigma$d[-(1:r)] <- 0
-      sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v)
+      sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v) # truncating the covariance matrix
       
       df_k_fold <- X[samples[,k],]
       df_k_fold_miss <- as.matrix(df_k_fold[,split])
@@ -66,13 +66,18 @@ WrongPCAImproved <- function(X, samples){
       sigma_miss_obs <- sigma_trunc[split, -split]
       sigma_obs_obs <- sigma_trunc[-split, -split]
       
-      est_x_miss <- lapply(1:l1, function(n){mu_miss + sigma_miss_obs %*% ginv(sigma_obs_obs, tol = 1e-20) %*% (df_k_fold_obs[n,]-mu_obs)})
-      mse1[r] <- sum(sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1})) + mse1[r]
+      est_x_miss <- sapply(1:l1, function(n){mu_miss + sigma_miss_obs %*% ginv(sigma_obs_obs, tol = 1e-20) %*% (df_k_fold_obs[n,]-mu_obs)})
+      print(est_x_miss)
+      #mse1[r] <- sum(sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1})) + mse1[r]
+      #mse1[r] <- sum(sapply(1:l1, function(s){sum((est_x_miss[[s]]-df_k_fold_miss[s,])^2)}))/l1 + mse1[r]
+      mse1[r]  <-  sum((est_x_miss - t(df_k_fold_miss))^2) + mse1[r]
+      
     }
   }
   return(mse1)
 }
 
+undebug(WrongPCAImproved)
 
 KDEApproach <- function(X){
   # args: X matrix containing data
@@ -83,9 +88,9 @@ KDEApproach <- function(X){
   
   for (r in 1:p) {
     sigma <- cov(X)
-    svd_sigma <- svd(sigma)
-    svd_sigma$d[-(1:r)] <- 0
-    sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v)
+    eigen_sigma <- eigen(sigma)
+    eigen_sigma$values[-(1:r)] <- 0
+    sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors)
     mse4[r] <- norm(sigma-sigma_trunc, type = "F")
   }
   return(mse4)
@@ -103,7 +108,7 @@ MatrixCompletion <- function(X){
   biv_index <- matrix(sample(0:1, size = n*p, replace = T), nrow = n, ncol = p)
 
   # Iterative-hard thresholding algorithm
-  tol = 1e-2
+  tol = 1e-1
   for (r in 1:p) {
     steps <- 0
     M_old <- matrix(rep(1, size = n*p), nrow = n, ncol = p)
@@ -117,7 +122,7 @@ MatrixCompletion <- function(X){
       steps <- steps + 1
     }
     print(paste0("MatrixCompletion: Steps ", steps, ", for rank r ", r))
-    mse5[r] <- norm(X-M_new, type = "F")
+    mse5[r] <- norm(X-M_new, type = "F")^2
   }
   return(mse5)
 }
