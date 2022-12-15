@@ -28,7 +28,7 @@ for (i in 1:sim) {
   
   # Gaussian data with uniform "high noise", "low noise", differing noise, increasing noise
   df_uni_high_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(50, p)))
-  df_uni_low_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(2.2, p)))
+  df_uni_low_noise <- df #+ rmvnorm(n = n, mean = mean_df, sigma = diag(rep(2.2, p)))
   df_diff_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(runif(n = p, min = 0, max = 1000)))
   df_incr_noise <- df + rmvnorm(n=n, mean=mean_df, sigma=diag(c(1:p)^2))
   data <- list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise, "Increasing noise"=df_incr_noise)
