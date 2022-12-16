@@ -630,7 +630,7 @@ easily callable in R by the function <code>ginv()</code> embedded in the
 <p>This approach is a modfication of the KDE method. We want to minimize
 over the rank <span class="math inline">\(R\)</span> this formula <span class="math inline">\(\mathbb{E} \| \widehat{C}_R - C \|_2^2 =
 \mathbb{E}\| \widehat{C}_R \| - 2 \mathbb{E} \langle \widehat{C}_R, C
-\rangle + \| C \|_2^2\)</span> with <span class="math inline">\(\widehat{C}_R\)</span> being the the truncated
+\rangle + \| C \|_2^2\)</span> with <span class="math inline">\(\widehat{C}_R\)</span> being the truncated
 estimator having rank <span class="math inline">\(R\)</span>. Assuming
 that the mean is zero we, in our modification we’ll get: <span class="math display">\[
 \mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle
@@ -702,6 +702,16 @@ error.</li>
 </div>
 <div id="comparison-with-cv-methods" class="section level3">
 <h3>4.3 Comparison with CV methods</h3>
+<p>In regression methods and other similar techniques, the goal of CV is
+monitoring overfitting and calibrating hyperparameters. If we have a
+large amount of predictors, we would usually add regularization to the
+model. Therefore, we can use CV to tune model hyperparameters
+(e.g. <span class="math inline">\(\lambda\)</span> in LASSO). PCA also
+has an important hyperparameter to evaluate: the number of components in
+the model. In a common way, many cluster analysis models require to
+choose the amount of clusters before fitting the model. Viewed from the
+perspective of matrix factorization, these are very similar
+problems.</p>
 </div>
 </div>
 <div id="conclusion" class="section level2">
