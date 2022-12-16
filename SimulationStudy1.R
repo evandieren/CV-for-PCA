@@ -13,7 +13,7 @@ p <- 10
 K = 5
 mean_df <- rep(0, p)
 
-sim <- 2
+sim <- 1
 lsEigen <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsWrongPCA <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsWrongPCAImproved <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
@@ -25,7 +25,7 @@ for (i in 1:sim) {
   
   # mat <- matrix(runif(p*p, min = -20, 20), nrow = p, ncol = p)
   mat <- matrix(rnorm(p*p, mean = 0, sd = 1), nrow = p, ncol = p)
-  df <- rmvnorm(n = n, mean = mean_df, sigma = mat %*% t(mat))
+  df <- rmvnorm(n = n, mean = mean_df, sigma = mat %*% t(mat)) # basis real dataset
   
   # Gaussian data with uniform "high noise", "low noise", differing noise, increasing noise
   df_uni_high_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(50, p)))
