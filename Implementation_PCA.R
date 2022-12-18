@@ -44,7 +44,7 @@ WrongPCAImproved <- function(X, samples){
   mse1 <- rep(0, p)
   
   # Split data into missing and observed data
-  split <- sample(1:p, floor(p/2))
+  split <- sample(1:p, floor(p/2)) # 2 - 4
   
   for (r in 1:p) {
     for (k in 1:K) {
@@ -137,15 +137,16 @@ MatrixCompletion <- function(X){
 set.seed(11)
 n <- 100
 p <- 10
+r <- 3
 X <- array(rnorm(121,100,1),c(n,p))
 svd_X <- svd(X)
-svd_X$d[-(1:p)] <- 0
+svd_X$d[-(1:r)] <- 0
 X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v)
 samples <- matrix(sample(1:n),ncol=5)
 
 #out <- MatrixCompletion(X)
 #out <- KDEApproach(X)
-#out <- WrongPCAImproved(X_tronc,samples)
+out <- WrongPCAImproved(X_tronc,samples)
 
 # Testing Algorithms - seem to work so far
 

@@ -260,7 +260,41 @@ mse2
 
 
 ### 2.4 KDE modified approach
+This approach is a modfication of the KDE  method. We want to minimize over the rank $R$ this formula $\mathbb{E} \| \widehat{C}_R - C \|_2^2 = \mathbb{E}\| \widehat{C}_R \| - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_2^2$ with $\widehat{C}_R$ being the truncated estimator having rank $R$.
+Assuming that the mean is zero we, in our modification we'll get:
+$$
+\mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_R^{(-n)}}_{\approx \mathbb{E} \widehat{C}_R}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_R , X_n X_n^\top \rangle
+$$
+Therefore, since the truncated coveriance estimator isn't linear we obtain an approximation. Based on this strategy we'll choose the rank $R$ to minimize our CV.
 
+```{r echo=F, eval=F}
+
+#Cross Validation: KDE Modified Approach
+
+# args: X matrix containing data
+# returns: error measure of truncated covariance to the real covariance (Frobenius norm)
+
+p <- ncol(X)
+n <- nrow(X)
+mse4 <- rep(0,p)
+
+for (r in 1:p) {
+  eigen_sigma <- eigen(cov(X))
+  eigen_sigma$values[-(1:r)] <- 0
+  sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors)
+  
+  mse4[r] <- mse4[r] + norm(sigma_trunc,type="F")^2
+  
+  for (i in 1:n){
+    eigen_sigma_n <- eigen(cov(X[-i,]))
+    eigen_sigma_n$values[-(1:r)] <- 0
+    sigma_trunc_n <- eigen_sigma_n$vectors %*% diag(eigen_sigma_n$values) %*% t(eigen_sigma_n$vectors)
+    mse4[r] <- mse4[r] - 2/n*sum(sigma_trunc_n*(X[i,]%*%t(X[i,])))
+  }
+  }
+mse4
+
+```
 
 ### 2.5 Matrix completion method
 
@@ -296,5 +330,8 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with
 ### 4.2 Scree-plot method (non-automatic)
 
 ### 4.3 Comparison with CV methods
+In regression methods and other similar techniques, the goal of CV is monitoring overfitting and calibrating hyperparameters. If we have a large amount of predictors, we would usually add regularization to the model.
+Therefore, we can use CV to tune model hyperparameters (e.g. $\lambda$ in LASSO). PCA also has an important hyperparameter to evaluate: the number of components in the model.  In a common way, many cluster analysis models require to choose the amount of clusters before fitting the model. Viewed from the perspective of matrix factorization, these are very similar problems.
+
 
 ## 5. Conclusion
