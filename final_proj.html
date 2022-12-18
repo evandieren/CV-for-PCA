@@ -11,7 +11,7 @@
 
 <meta name="author" content="Emanuele Sorgente - Noah Scheider - Eliott Van Dieren" />
 
-<meta name="date" content="2022-12-16" />
+<meta name="date" content="2022-12-18" />
 
 <title>Final Project</title>
 
@@ -366,7 +366,7 @@ pre code {
 <h1 class="title toc-ignore">Final Project</h1>
 <h4 class="author">Emanuele Sorgente - Noah Scheider - Eliott Van
 Dieren</h4>
-<h4 class="date">2022-12-16</h4>
+<h4 class="date">2022-12-18</h4>
 
 </div>
 
@@ -624,6 +624,86 @@ easily callable in R by the function <code>ginv()</code> embedded in the
 </div>
 <div id="missing-data-approach" class="section level3">
 <h3>2.3 Missing data approach</h3>
+<p>Here it is assumed that the rows <span class="math inline">\(X_{n}
+\in \mathbb{R}^p, n=1,…,N\)</span> of the data matrix <span class="math inline">\(X=(X_{n,j})^{N,p}_{n,j=1}\)</span> are i.i.d.
+realizations of a Gaussian random variable <span class="math inline">\(X\)</span>. That is, the rows have with a mean
+<span class="math inline">\(\mu \in \mathbb{R}^p\)</span> and a
+covariance <span class="math inline">\(\Sigma \in \mathbb{R}^{p \times
+p}\)</span>. We will assume that <span class="math inline">\(rank(\Sigma)=r\)</span> for <span class="math inline">\(r=1,…,R\)</span>, and compare how well different
+values of <span class="math inline">\(r\)</span> fit the data. As
+described in <a href="https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca">Notes
+06 - T. Masak</a>, this approach is based on computing the estimators
+<span class="math inline">\(\hat{\Sigma}\)</span> and <span class="math inline">\(\hat{\mu}\)</span> on observed data by the EM
+algorithm and the set of missed and observed data is randomly selected
+for each fold <span class="math inline">\(K_i\)</span>. Let us now
+describe the EM algorithm used in our case and then describe the Missing
+data approach algorithm.</p>
+<p>Let <span class="math inline">\(\tilde{X}\)</span> be the dataset
+containing missing values randomly placed on the original <span class="math inline">\(N \times p\)</span> dataset. The EM algorithm
+works as follows :</p>
+<ul>
+<li>Initialize <span class="math inline">\(\hat{\mu} =
+\frac{1}{N}\sum_{n=1}^N(\tilde{X}^{obs}_{n})\)</span> and <span class="math inline">\(\hat{\Sigma} = I_{p\times p}\)</span>, where <span class="math inline">\(\tilde{X}_{obs}\)</span> is the dataset restricted
+to observed values.</li>
+<li>Set <span class="math inline">\(\hat{\Sigma}^{old} =
+6\hat{\Sigma}\)</span>, and <span class="math inline">\(tol =
+0.01\)</span></li>
+<li><strong>while</strong> <span class="math inline">\((||\hat{\Sigma}-\hat{\Sigma}^{old}||_F &gt;
+tol*||\hat{\Sigma}^{old}||_F)\)</span> where <span class="math inline">\(||.||_F\)</span> is the Fobenius norm
+<ul>
+<li>Set <span class="math inline">\(\hat{\Sigma}^{old} =
+\hat{\Sigma}\)</span></li>
+<li>Estimate <span class="math inline">\(\tilde{X}_{miss}^{n}\)</span>
+by a linear estimator : <span class="math inline">\(\tilde{X}_{miss}^n =
+\hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}
+\hat{\Sigma}_{obs}^{\dagger}(\tilde{X}_{obs}^n-\hat{\mu}_{obs})\)</span></li>
+<li>Define <span class="math inline">\(\hat{X}\)</span> being <span class="math inline">\(\tilde{X}\)</span> with missing values filled by
+the linear estimator above.</li>
+<li>Set <span class="math inline">\(\hat{\mu} = mean(\hat{X})\)</span>,
+<span class="math inline">\(\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N
+(\hat{X}_i-\hat{\mu})(\hat{X}_i-\hat{\mu})^T\)</span>, also known as the
+two MLE estimators</li>
+</ul></li>
+<li><strong>end while</strong></li>
+</ul>
+<p>This method slightly differs from the one presented in <a href="https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/05_EM.html">Notes
+05 - T. Masak</a>, mainly due to poor results when estimating <span class="math inline">\(\hat{\Sigma}\)</span>. Another matrix approach for
+the EM algorithm was also tried from Machine Learning, Murphy but was
+also unsuccessfull when predicting <span class="math inline">\(\hat{\Sigma}\)</span>.</p>
+<p>Below is the pseudo-code for the Missing Data method :</p>
+<ul>
+<li>split the dataset in <span class="math inline">\(K\)</span> folds by
+randomly selecting indices from the bivariate index set <span class="math inline">\(J := \{(n,j) | n = 1,...,N, \quad,
+j=1,...,p\}\)</span>.</li>
+<li><strong>for</strong> <span class="math inline">\(k=1,\ldots,K\)</span>:
+<ul>
+<li>Compute the bivariate set of missed data <span class="math inline">\(\Omega\)</span></li>
+<li>Compute <span class="math inline">\(\hat{\mu}\)</span> and <span class="math inline">\(\hat{\Sigma}\)</span> by the EM algorithm with the
+dataset <span class="math inline">\(X\)</span> and <span class="math inline">\(\Omega\)</span> as inputs</li>
+<li>Truncate <span class="math inline">\(\hat{\Sigma}\)</span> to a rank
+<span class="math inline">\(r\)</span> matrix <span class="math inline">\(\hat{\Sigma}_r\)</span> by eigenvalue
+decomposition, + ADD NOISE</li>
+<li>Reuse the missed data <span class="math inline">\(\Omega\)</span> to
+split the data points <span class="math inline">\(\mathbf{x}^m\in
+\mathbb{R}^{p}, m \in J_k\)</span> into a “missing” part <span class="math inline">\(\mathbf{x}_{miss}\)</span> that will be used for
+validation and an “observed” part <span class="math inline">\(\mathbf{x}_{obs}\)</span> in order to estimate its
+counterpart$</li>
+<li>Predict the missing part from the observed part using the <span class="math inline">\(\hat{\mu}\)</span> and <span class="math inline">\(\hat{\Sigma}_r\)</span></li>
+<li>That is compute <span class="math inline">\(\hat{\mathbf{x}}^m_{miss} =
+\mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}]
+= \hat{\mu}_{miss} +
+\hat{\Sigma}_{miss,obs}\hat{\Sigma}^\dagger_{obs}(\mathbf{x}^m_{obs}-\hat{\mu}_{obs})\)</span>,
+where <span class="math inline">\(\hat{\Sigma}^\dagger_{obs}\)</span> is
+considered the Pseudoinverse of <span class="math inline">\(\hat{\Sigma}_{obs,obs}\)</span> and <span class="math inline">\(\hat{\mu}_{miss},\hat{\mu}_{obs}\)</span> is <span class="math inline">\(\hat{\mu}\)</span> split according to the “missed”
+and “observed” part</li>
+</ul></li>
+<li><strong>end for</strong><br />
+</li>
+<li>choose <span class="math inline">\(\widehat{r} =
+\underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)\)</span>, where
+for instance <span class="math inline">\(Err_k(r)\)</span> can be
+considered as the MSE for every fold <span class="math inline">\(J_k\)</span>, e.g. $Err_k(r)=_{mJ_k}</li>
+</ul>
 </div>
 <div id="kde-modified-approach" class="section level3">
 <h3>2.4 KDE modified approach</h3>

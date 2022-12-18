@@ -52,9 +52,10 @@ WrongPCAImproved <- function(X, samples){
       
       df_k <- X[-samples[,k],] ## all observations except the fold
       mu <- colMeans(df_k) # mu without fold
-      eigen_sigma <- eigen(cov(df_k)) # eigen here
+      eigen_sigma <- eigen(cov(df_k))
+      sum_eigen <- sum(eigen_sigma$values[-c(1:r)]) # Eigenvalues destroyed
       eigen_sigma$values[-(1:r)] <- 0
-      sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors) # truncating the covariance matrix
+      sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors) + + sum_eigen/p*diag(p)# truncating the covariance matrix
       
       df_k_fold <- X[samples[,k],]
       df_k_fold_miss <- as.matrix(df_k_fold[,split])
@@ -134,22 +135,25 @@ MatrixCompletion <- function(X){
   return(mse5)
 }
 
-set.seed(67)
+
 n <- 1000
 p <- 20
-r <- 7
+r <- 15
 K <- 5
-X <- array(rnorm(n*p,10,1),c(n,p))
+X <- array(rnorm(n*p,0,1),c(n,p))
 svd_X <- svd(X)
+r_val <- svd_X$d[r]
 svd_X$d[-(1:r)] <- 0
-X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v)
+X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v) + 0.01*r_val*rmvnorm(n = n, mean = rep(0,p), sigma = 0.001*r_val*diag(p))
 samples <- matrix(sample(1:n),ncol=K)
 
-#out <- MatrixCompletion(X)
+out <- MatrixCompletion(X_tronc)
 #out <- KDEApproach(X)
 #out <- WrongPCAImproved(X_tronc,samples)
 
 plot(1:p,out,type="l")
+
+print(which.min(out))
 
 # Testing Algorithms - seem to work so far
 

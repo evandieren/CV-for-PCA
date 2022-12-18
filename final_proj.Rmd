@@ -204,6 +204,36 @@ for (k in 1:K) {
 ```
 ### 2.3 Missing data approach
 
+Here it is assumed that the rows $X_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $X=(X_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a Gaussian random variable $X$. That is, the rows have with a mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that $rank(\Sigma)=r$ for $r=1,…,R$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ on observed data by the EM algorithm and the set of missed and observed data is randomly selected for each fold $K_i$. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
+
+Let $\tilde{X}$ be the dataset containing missing values randomly placed on the original $N \times p$ dataset. The EM algorithm works as follows :
+
+  * Initialize $\hat{\mu} = \frac{1}{N}\sum_{n=1}^N(\tilde{X}^{obs}_{n})$ and $\hat{\Sigma} = I_{p\times p}$, where $\tilde{X}_{obs}$ is the dataset restricted to observed values.
+  * Set $\hat{\Sigma}^{old} = 6\hat{\Sigma}$, and $tol = 0.01$
+  * **while** $(||\hat{\Sigma}-\hat{\Sigma}^{old}||_F > tol*||\hat{\Sigma}^{old}||_F)$ where $||.||_F$ is the Frobenius norm
+    * Set $\hat{\Sigma}^{old} = \hat{\Sigma}$
+    * Estimate $\tilde{X}_{miss}^{n}$ by a linear estimator : $\tilde{X}_{miss}^n = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs} \hat{\Sigma}_{obs}^{\dagger}(\tilde{X}_{obs}^n-\hat{\mu}_{obs})$
+    * Define $\hat{X}$ being $\tilde{X}$ with missing values filled by the linear estimator above.
+    * Set $\hat{\mu} = mean(\hat{X})$, $\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N (\hat{X}_i-\hat{\mu})(\hat{X}_i-\hat{\mu})^T$, also known as the two MLE estimators
+  * **end while**
+
+This method slightly differs from the one presented in [Notes 05 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/05_EM.html), mainly due to poor results when estimating $\hat{\Sigma}$. Another matrix approach for the EM algorithm was also tried from Machine Learning, Murphy but was also unsuccessfull when predicting $\hat{\Sigma}$.
+
+Below is the pseudo-code for the Missing Data method :
+
+  * split the dataset in $K$ folds by randomly selecting indices from the bivariate index set $J := \{(n,j) | n = 1,...,N, \quad, j=1,...,p\}$.
+  * **for** $k=1,\ldots,K$:
+    - Compute the bivariate set of missed data $\Omega$
+    - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the dataset $X$ and $\Omega$ as inputs
+    - Truncate $\hat{\Sigma}$ to a rank $r$ matrix $\hat{\Sigma}_r$ by eigenvalue decomposition, + ADD NOISE
+    - Reuse the missed data $\Omega$ to split the data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart$
+    - Predict the missing part from the observed part using the $\hat{\mu}$ and $\hat{\Sigma}_r$
+    - That is compute $\hat{\mathbf{x}}^m_{miss} = \mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}] = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}\hat{\Sigma}^\dagger_{obs}(\mathbf{x}^m_{obs}-\hat{\mu}_{obs})$, where $\hat{\Sigma}^\dagger_{obs}$ is considered the Pseudoinverse of $\hat{\Sigma}_{obs,obs}$ and $\hat{\mu}_{miss},\hat{\mu}_{obs}$ is $\hat{\mu}$ split according to the "missed" and "observed" part
+  * **end for**   
+  * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k}
+
+
+
 ```{r echo=F, eval=F}
 
 # Cross-validation: "Missing Data Approach"
