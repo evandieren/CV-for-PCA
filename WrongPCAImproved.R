@@ -20,9 +20,10 @@ WrongPCAImproved <- function(X, samples){
       
       df_k <- X[-samples[,k],] ## all observations except the fold
       mu <- colMeans(df_k) # mu without fold
-      svd_sigma <- svd(cov(df_k)) # eigen here
-      svd_sigma$d[-(1:r)] <- 0
-      sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v) # truncating the covariance matrix
+      eigen_sigma <- eigen(cov(df_k)) # eigen here
+      sum_eigen <- sum(eigen_sigma$d[-(1:r)])
+      eigen_sigma$d[-(1:r)] <- 0
+      sigma_trunc <- eigen_sigma$u %*% diag(eigen_sigma$d) %*% t(eigen_sigma$v) + sum_eigen/p*diag(p)# truncating the covariance matrix
       
       df_k_fold <- X[samples[,k],]
       df_k_fold_miss <- as.matrix(df_k_fold[,split])
@@ -34,7 +35,7 @@ WrongPCAImproved <- function(X, samples){
       sigma_miss_obs <- sigma_trunc[split, -split]
       sigma_obs_obs <- sigma_trunc[-split, -split]
       
-      est_x_miss <- sapply(1:l1, function(n){mu_miss + sigma_miss_obs %*% ginv(sigma_obs_obs, tol = 1e-20) %*% (df_k_fold_obs[n,]-mu_obs)})
+      est_x_miss <- sapply(1:l1, function(n){mu_miss + sigma_miss_obs %*% ginv(sigma_obs_obs) %*% (df_k_fold_obs[n,]-mu_obs)})
       #print(est_x_miss)
       #mse1[r] <- sum(sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1})) + mse1[r]
       #mse1[r] <- sum(sapply(1:l1, function(s){sum((est_x_miss[[s]]-df_k_fold_miss[s,])^2)}))/l1 + mse1[r]
