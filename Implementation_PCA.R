@@ -1,7 +1,7 @@
 # mvtnorm provides possibility to create multivariate gaussian rv
 library(mvtnorm)
 library(MASS)
-
+library(pracma)
 
 WrongPCA <- function(X, samples){
   # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
@@ -36,7 +36,7 @@ WrongPCA <- function(X, samples){
 
 
 WrongPCAImproved <- function(X, samples){
-  # args: X matrix containing data, pca_vec containing index of pca (dimension r), samples containing CV-Folds
+  # args: X matrix containing data, samples containing CV-Folds
   # returns: MSE of the CV
   
   K <- dim(samples)[2]
@@ -52,9 +52,9 @@ WrongPCAImproved <- function(X, samples){
       
       df_k <- X[-samples[,k],] ## all observations except the fold
       mu <- colMeans(df_k) # mu without fold
-      svd_sigma <- svd(cov(df_k)) # eigen here
-      svd_sigma$d[-(1:r)] <- 0
-      sigma_trunc <- svd_sigma$u %*% diag(svd_sigma$d) %*% t(svd_sigma$v) # truncating the covariance matrix
+      eigen_sigma <- eigen(cov(df_k)) # eigen here
+      eigen_sigma$values[-(1:r)] <- 0
+      sigma_trunc <- eigen_sigma$vectors %*% diag(eigen_sigma$values) %*% t(eigen_sigma$vectors) # truncating the covariance matrix
       
       df_k_fold <- X[samples[,k],]
       df_k_fold_miss <- as.matrix(df_k_fold[,split])
@@ -66,7 +66,7 @@ WrongPCAImproved <- function(X, samples){
       sigma_miss_obs <- sigma_trunc[split, -split]
       sigma_obs_obs <- sigma_trunc[-split, -split]
       
-      est_x_miss <- sapply(1:l1, function(n){mu_miss + sigma_miss_obs %*% ginv(sigma_obs_obs, tol = 1e-20) %*% (df_k_fold_obs[n,]-mu_obs)})
+      est_x_miss <- sapply(1:l1, function(n){mu_miss + sigma_miss_obs %*%ginv(sigma_obs_obs)%*%(df_k_fold_obs[n,]-mu_obs)})
       #print(est_x_miss)
       #mse1[r] <- sum(sapply(1:l1, function(s){norm(est_x_miss[[s]]-df_k_fold_miss[s,], type = "2")^2/l1})) + mse1[r]
       #mse1[r] <- sum(sapply(1:l1, function(s){sum((est_x_miss[[s]]-df_k_fold_miss[s,])^2)}))/l1 + mse1[r]
@@ -134,19 +134,22 @@ MatrixCompletion <- function(X){
   return(mse5)
 }
 
-set.seed(11)
-n <- 100
-p <- 10
-r <- 3
-X <- array(rnorm(121,100,1),c(n,p))
+set.seed(67)
+n <- 1000
+p <- 20
+r <- 7
+K <- 5
+X <- array(rnorm(n*p,10,1),c(n,p))
 svd_X <- svd(X)
 svd_X$d[-(1:r)] <- 0
 X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v)
-samples <- matrix(sample(1:n),ncol=5)
+samples <- matrix(sample(1:n),ncol=K)
 
 #out <- MatrixCompletion(X)
 #out <- KDEApproach(X)
-out <- WrongPCAImproved(X_tronc,samples)
+#out <- WrongPCAImproved(X_tronc,samples)
+
+plot(1:p,out,type="l")
 
 # Testing Algorithms - seem to work so far
 
