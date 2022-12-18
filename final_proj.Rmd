@@ -101,7 +101,7 @@ The Scree-plot method consists of choosing the value of $r$ which is the elbow o
 
 After the end of [2. Cross-validation on PCA methods] we will be equipped with multiple approaches which enable us to recover the best amount of dimensions needed to represent data "accurately" of a data set. Intuitively, every method must have its different advantages and draw backs.
 In order to get a better feeling on how our Cross-Validation methods behave in different circumstances, we will run a simulation study on a variety of synthesized data sets. This allows us to discover the limits of the different methods used and allow us to conclude and recommend different Algorithms with respect to its underlying data. 
-As by construction of our Alogrithms every single one of them besides the [2.1 Naïve Approach], the [2.5 Matrix completion method] is only applicable to Multivariate Gaussian distributed data. Therefore we restrict ourselves to this special distribution and create corresponding data in order to get meaningful results. All in all, we consider twelve different data sets and compare the results of our $5$ Algorithms. Furthermore, we only consider centered Gaussian Multivariate Random variables with mean $0$. We create three base data sets, on which we infer for kinds of different noises. In order to compare those we start with a standard Gaussian data set. The second and third base data sets will rely on a random and structured covariance matrix. We denote our base data sets as $D^{i}_0, D^{i}_1$ and $D^{i}_2$ and $i \in \{1,\dots,4\}$. It consists of data $X=\{X^1,\dots,X^n\}$ and noise $\sigma$.
+As by construction of our Alogrithms every single one of them besides the [2.1 Naïve Approach], the [2.5 Matrix completion method] is only applicable to Multivariate Gaussian distributed data. Therefore we restrict ourselves to this special distribution and create corresponding data in order to get meaningful results. All in all, we consider $12$ different data sets and compare the results of our five algorithms. Furthermore, we only consider centered Gaussian Multivariate Random variables and create three base data sets, on which we infer four kinds of different noises. The first data set is a standard Multivariate Gaussian data set while the second and third base data sets will rely on a random and structured covariance matrix. We denote our base data sets as $D^{i}_0, D^{i}_1$ and $D^{i}_2$ and $i \in \{1,\dots,4\}$. It consists of data $X=\{X^1,\dots,X^n\}$ and noise $\epsilon^{i}$.
 
 \[
 D^{i}_0 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \mathbb{1}_{p\times p}), \forall j = 1,\dots,n\\
@@ -109,7 +109,7 @@ D^{i}_1 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \Sigma_1), \f
 D^{i}_2 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \Sigma_2), \forall j = 1,\dots,n \text{ and } \Sigma_2=M\cdot M^{T}, (M_{ij})_{1\leq i,j\leq p}=\frac{(i-1)p+j}{p}
 \]
 
-For the covariance $\Sigma_2$ of $D^{i}_2$ we will get a structured the matrix that will emphasize the meaningful position of the last variables. To make this more clear, we will give an example for $p=3$:
+For the covariance $\Sigma_2$ of $D^{i}_2$ we will get a structured matrix that will emphasize the meaningful position of the last variables. For clarity purposes, we will give an example for $p=3$:
 
 \[
 M = 
@@ -126,7 +126,7 @@ M =
 \end{pmatrix}
 \]
 
-In order to have valid comparisons across all of our methods and validate their correctness, we modify $X$. First, we realize that by the random construction of $X$, we can assume that it has full rank $p$. Second, we truncate it to a specific rank $r$, which should be the recommended dimensions of our Algorithms. Due to asymmetry of $X$, we do so by performing a singular value decomposition of $X$ with the built-in `svd()` function. We will set the $p-r$ smallest of its singular to $0$. This enables us to control the rank of $X$. We realize that $D_2$ is rank $2$ before adding noise. Having adapted $X$, we infer either uniform noise, differing noise or noise that will increase for each variable.
+In order to have valid comparisons across all of our methods and validate their correctness, we modify $X$. First, we realize that by the random construction of $X$, we can assume that it has full rank $p$. Second, we truncate it to a specific rank $r$, which should be the recommended dimensions of our Algorithms. Due to asymmetry of $X$, we do so by performing a singular value decomposition of $X$ with the built-in `svd()` function. We will set the $p-r$ smallest of its singular values to $0$. This enables us to control the rank of $X$. We realize that $D_2$ is rank $2$ before adding noise. Having adapted $X$, we infer either uniform noise, differing noise or noise that will increase for each variable.
 
 \[
 \epsilon^{1}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma^2=1.5 \\
@@ -169,7 +169,10 @@ trunc <- sample(1:p, p-r)
 
 ### 2.1 Naïve Approach
 
-A widely used approach for Cross-validation in PCA is a method that has the right intentions but fails at a critical point. Imaging sliding down slide with no end. Gravity would make that an endless ride. Same concept is happening here. But due to computational issues the endlessness is adapted to finite. This is due to the fact that this Naïve Approach does not take into account any variance. Let the algorithm as presented in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca) speak for itself. We start with the usual conventions by denoting $X \in \mathbb{R}^{n \times p}$ our data with $n$ observations and $p$ variables:
+
+lol : Imaging sliding down slide with no end, gravity would make that an endless ride, the same concept is happening here but due to computational constraints, the endlessness is adapted to finite.
+
+A widely used approach for Cross-validation in PCA is a method that has the right intentions but fails at a critical point :it does not take into account any variance-bias tradeoff, meaning that the optimal solution will always be $r = R$. We start with the usual conventions by denoting $X \in \mathbb{R}^{n \times p}$ our data with $n$ observations and $p$ variables, then as presented in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), below is the pseudo-code of the Naïve approach:
 
   * split data into $K$ folds $J_1,\ldots,J_K$
   * **for** $k=1,\ldots,K$:
@@ -178,22 +181,18 @@ A widely used approach for Cross-validation in PCA is a method that has the righ
   * **end for**
   * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$
 
-A numerical method to solve the least square problem in the top of the algorithm would be to compute the SVD decomposition of $\mathbf X[J_k^c,]$ and truncate the $p-r$ smallest singular values. In order to estimate $\mathbf{x^{m}}, \forall m \in J_k$ with a lower dimensional version we project it by the matrix $P_{\mathbf{\widehat{L}}}$. Where does this matrix come from and how is it computable? To resolve this we took advantage of the R built-in function `prcomp()` the returns us among other objects a basis for the dimension of $\widehat{\mathbf L}$. The promised issue occurs when computing the our error measure without further to-do. Thus the error obviously shrinks when $\widehat{\mathbf L}$ is allowed to have higher dimensions and atteins $0$ when its number of dimensions equals those of the initial data set $\mathbf{X}$.
-
-Indeed
-
-
+A numerical method to solve the least square problem in the top of the algorithm would be to compute the SVD decomposition of $\mathbf X[J_k^c,]$ and truncate the rank to $r$ by setting the $p-r$ smallest singular values to zero. In order to estimate $\mathbf{x^{m}}, \forall m \in J_k$ with a lower dimensional version, we project it by the matrix $P_{\mathbf{\widehat{L}}}$. Where does this matrix come from and how is it computable? To resolve this we took advantage of the R built-in function `prcomp()` the returns us among other objects a basis for the dimension of $\widehat{\mathbf L}$. The promised issue occurs when computing our error measure without further to-do. Thus the error obviously shrinks when $\widehat{\mathbf L}$ is allowed to have higher dimensions and converges to $0$ when its number of dimensions equals those of the initial data set $\mathbf{X}$, as the SVD will be a nearly exact representation of the matrix X.
 
 ### 2.2 Artificially turn the unsupervised problem into a supervised one
 
-We now want to "correct" the [2.1 Naïve Approach] and artificially induce a Bias-Variance trade-off. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Gaussian data with $n$ observations and $p$ variables:
+We now want to "correct" the [2.1 Naïve Approach] and artificially induce a Bias-Variance trade-off. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Multivariate Gaussian dataset with $n$ observations and $p$ variables:
 
   * split data into $K$ folds $J_1,\ldots,J_K$
   * **for** $k=1,\ldots,K$:
-    - Compute $\hat{\mu}$ and $\hat{\Sigma} := \hat{\Sigma}_r$ (the empirical estimator truncated to rank r) on $\mathbf{X}\setminus J_k$.
+    - Compute $\hat{\mu}$ and $\hat{\Sigma} := \hat{\Sigma}_r$ (the empirical estimator truncated to rank r) on $\mathbf{X}\setminus J_k$. + ADD NOISE
     - Split data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart$
     - Predict the missing part from the observed part using the $\hat{\mu}$ and $\hat{\Sigma}_r$
-    - That is compute $\hat{\mathbf{x}}^m_{miss} = \mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}] = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}\hat{\Sigma}^+_{obs,obs}(\mathbf{x}^m_{obs}-\hat{\mu}_{obs})$, where $\hat{\Sigma}^+_{obs,obs}$ is considered the Pseudoinverse of $\hat{\Sigma}_{obs,obs}$ and $\hat{\mu}_{miss},\hat{\mu}_{obs}$ is $\hat{\mu}$ split according to the "missed" and "observed" part
+    - That is compute $\hat{\mathbf{x}}^m_{miss} = \mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}] = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}\hat{\Sigma}^\dagger_{obs}(\mathbf{x}^m_{obs}-\hat{\mu}_{obs})$, where $\hat{\Sigma}^\dagger_{obs}$ is considered the Pseudoinverse of $\hat{\Sigma}_{obs,obs}$ and $\hat{\mu}_{miss},\hat{\mu}_{obs}$ is $\hat{\mu}$ split according to the "missed" and "observed" variable indices.
   * **end for**
   * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k} \|\hat{\mathbf{x}}^m_{miss}-\mathbf{x}^m_{miss}\|^2_2$
 
@@ -246,13 +245,14 @@ Here it is assumed that the rows $X_{n} \in \mathbb{R}^p, n=1,…,N$ of the data
 Let $\tilde{X}$ be the dataset containing missing values randomly placed on the original $N \times p$ dataset. The EM algorithm works as follows :
 
   * Initialize $\hat{\mu} = \frac{1}{N}\sum_{n=1}^N(\tilde{X}^{obs}_{n})$ and $\hat{\Sigma} = I_{p\times p}$, where $\tilde{X}_{obs}$ is the dataset restricted to observed values.
-  * Set $\hat{\Sigma}^{old} = 6\hat{\Sigma}$, and $tol = 0.01$
+  * Set $\hat{\Sigma}^{old} = C\hat{\Sigma}$, and $tol = 0.01$ for a given constant $C$ big enough to enter the while loop
   * **while** $(||\hat{\Sigma}-\hat{\Sigma}^{old}||_F > tol*||\hat{\Sigma}^{old}||_F)$ where $||.||_F$ is the Frobenius norm
-    * Set $\hat{\Sigma}^{old} = \hat{\Sigma}$
-    * Estimate $\tilde{X}_{miss}^{n}$ by a linear estimator : $\tilde{X}_{miss}^n = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs} \hat{\Sigma}_{obs}^{\dagger}(\tilde{X}_{obs}^n-\hat{\mu}_{obs})$
-    * Define $\hat{X}$ being $\tilde{X}$ with missing values filled by the linear estimator above.
-    * Set $\hat{\mu} = mean(\hat{X})$, $\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N (\hat{X}_i-\hat{\mu})(\hat{X}_i-\hat{\mu})^T$, also known as the two MLE estimators
+    - Set $\hat{\Sigma}^{old} = \hat{\Sigma}$
+    - Estimate $\tilde{X}_{miss}^{n}$ by a linear estimator : $\tilde{X}_{miss}^n = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs} \hat{\Sigma}_{obs}^{\dagger}(\tilde{X}_{obs}^n-\hat{\mu}_{obs})$
+    - Define $\hat{X}$ being $\tilde{X}$ with missing values filled by the linear estimator above.
+    - Set $\hat{\mu} = mean(\hat{X})$, $\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N (\hat{X}_i-\hat{\mu})(\hat{X}_i-\hat{\mu})^T$, also known as the two MLE estimators
   * **end while**
+  * return the estimated $\hat{\mu}, \hat{\Sigma}$
 
 This method slightly differs from the one presented in [Notes 05 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/05_EM.html), mainly due to poor results when estimating $\hat{\Sigma}$. Another matrix approach for the EM algorithm was also tried from Machine Learning, Murphy but was also unsuccessfull when predicting $\hat{\Sigma}$.
 
@@ -263,7 +263,7 @@ Below is the pseudo-code for the Missing Data method :
     - Compute the bivariate set of missed data $\Omega$
     - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the dataset $X$ and $\Omega$ as inputs
     - Truncate $\hat{\Sigma}$ to a rank $r$ matrix $\hat{\Sigma}_r$ by eigenvalue decomposition, + ADD NOISE
-    - Reuse the missed data $\Omega$ to split the data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart$
+    - Reuse the missed data $\Omega$ to split the data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart
     - Predict the missing part from the observed part using the $\hat{\mu}$ and $\hat{\Sigma}_r$
     - That is compute $\hat{\mathbf{x}}^m_{miss} = \mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}] = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}\hat{\Sigma}^\dagger_{obs}(\mathbf{x}^m_{obs}-\hat{\mu}_{obs})$, where $\hat{\Sigma}^\dagger_{obs}$ is considered the Pseudoinverse of $\hat{\Sigma}_{obs,obs}$ and $\hat{\mu}_{miss},\hat{\mu}_{obs}$ is $\hat{\mu}$ split according to the "missed" and "observed" part
   * **end for**   
@@ -395,7 +395,7 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with
       \mathbf{M}^{(l)} = \begin{cases} X_{ij} \quad \text{for } (i,j) \in \Omega \\
                                        \widetilde{M}_{i,j} \quad \text{for } (i,j) \notin \Omega \end{cases}
       \]
-  * **while $||M^{(l)}-M^{(l-1)}||_2> tol$**:
+  * **while $||M^{(l)}-M^{(l-1)}||_F> tol$**:
   * Store the error $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment with different values of $R$. Pick the $R$ which gives the lowest error.
     
 ## 3. Comparison of CV methods
