@@ -1,0 +1,23 @@
+Mail to Almond:
+
+Dear Almond,
+
+As we agreed in the exercise last Friday, we will send you the points that we are not a 100% sure, before starting analyzing the results of our simulation study.
+
+Wrong PCA Method:
+We tried to work in the feedback you gave us with adding the variance by cutting off the p-r smalles eigenvalues. However we still run into some troubles.
+* Why is that?
+
+Matrix Completion Method:
+* Is the way we implemented correct?
+* What would be the best convergence measure in this case?
+* To what extend is a cross validation already performed in the Algorithm. Or should we implent this algorithms, by enhancing it with a for-loop that computes the error when leaving a certain amount of informations.
+
+KDE Approach:
+* Is the way we implemented correct?
+
+When testing with the two latter with a modified data set truncated to rank r. We noticed that the Matrix Complemention reacts highly sensitive to the choosen signal-to-noise ratio. Is that supposed to be? Obviously this would depend whether we implemented them correctly.
+
+Good luck for the conference on Tuesday!
+
+Emanuele, Eliott and Noah

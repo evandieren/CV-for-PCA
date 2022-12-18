@@ -111,7 +111,7 @@ D^{i}_2 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \Sigma_2), \f
 
 For the covariance $\Sigma_2$ of $D^{i}_2$ we will get a structured the matrix that will emphasize the meaningful position of the last variables. To make this more clear, we will give an example for $p=3$:
 
-$$
+\[
 M = 
 \frac{1}{9}\begin{pmatrix}
   1 & 2 & 3 \\
@@ -124,16 +124,16 @@ M =
 0.96 & 1.15 & 1.33 \\
 1.11 & 1.33 & 1.56 \\
 \end{pmatrix}
-$$
+\]
 
 In order to have valid comparisons across all of our methods and validate their correctness, we modify $X$. First, we realize that by the random construction of $X$, we can assume that it has full rank $p$. Second, we truncate it to a specific rank $r$, which should be the recommended dimensions of our Algorithms. Due to asymmetry of $X$, we do so by performing a singular value decomposition of $X$ with the built-in `svd()` function. We will set the $p-r$ smallest of its singular to $0$. This enables us to control the rank of $X$. We realize that $D_2$ is rank $2$ before adding noise. Having adapted $X$, we infer either uniform noise, differing noise or noise that will increase for each variable.
 
-$$
+\[
 \epsilon^{1}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma^2=1.5 \\
 \epsilon^{2}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma^2=0.2 \\
 \epsilon^{3}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0, U), U_{ii}\stackrel{\text{iid}}{\sim} \mathcal{U}([0,2]) \text{ and } U_{ij}=0, \text{for } i\neq j \\
 \epsilon^{4}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0, U), U_{ii}= \frac{2i}{p}\text{ and } U_{ij}=0, \text{for } i\neq j
-$$
+\]
 
 ## 2. Cross-validation on PCA methods
 
@@ -317,12 +317,32 @@ mse2
 
 
 ### 2.4 KDE modified approach
-This approach is a modfication of the KDE  method. We want to minimize over the rank $R$ this formula $\mathbb{E} \| \widehat{C}_R - C \|_2^2 = \mathbb{E}\| \widehat{C}_R \| - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_2^2$ with $\widehat{C}_R$ being the truncated estimator having rank $R$.
+This approach is a modfication of the KDE  method. As indicated in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca) the goal is to minimize the rank $R$ in
+
+\[
+\mathbb{E} \| \widehat{C}_R - C \|_2^2 = \mathbb{E}\| \widehat{C}_R \| - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_2^2
+\]
+
+with $\widehat{C}_R$ being the truncated estimator having rank $R$.
 Assuming that the mean is zero we, in our modification we'll get:
-$$
+\[
 \mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_R^{(-n)}}_{\approx \mathbb{E} \widehat{C}_R}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_R , X_n X_n^\top \rangle
-$$
-Therefore, since the truncated coveriance estimator isn't linear we obtain an approximation. Based on this strategy we'll choose the rank $R$ to minimize our CV.
+\]
+
+Therefore, since the truncated covariance estimator isn't linear we obtain an approximation. Based on this strategy we'll choose the rank $R$ to minimize our CV. Computing this approximation and averaging it for every observation, aswell as neglecting the $\| C \|_2^2$ (constant error) will produce a useful measure error. Overall, we implement this method as follows for every rank $R$:
+
+* Estimate Covariance $\widehat{C}$ from given data $X$
+* Decompose $\widehat{C}$ and set $p-R$ smallest eigenvalues to $0$
+* Compute Frobenius-norm $\|\cdot\|=\|\cdot\|_F$
+* **for** $j$ in $1,\dots,n$:
+  - calculate $\widehat{C}_R^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $X$
+  - reduce $\|\widehat{C}_R\|_F$ by $\frac{2}{n}\widehat{C}_R\cdot\widehat{C}_R^{(-j)}$
+* **end**
+* Choose $R$ according to the minimal error
+
+Stepping into the for-loop we realize that it actually resembles a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. 
+
+
 
 ```{r echo=F, eval=F}
 

@@ -762,19 +762,47 @@ considered as the MSE for every fold <span class="math inline">\(J_k\)</span>, e
 </div>
 <div id="kde-modified-approach" class="section level3">
 <h3>2.4 KDE modified approach</h3>
-<p>This approach is a modfication of the KDE method. We want to minimize
-over the rank <span class="math inline">\(R\)</span> this formula <span class="math inline">\(\mathbb{E} \| \widehat{C}_R - C \|_2^2 =
-\mathbb{E}\| \widehat{C}_R \| - 2 \mathbb{E} \langle \widehat{C}_R, C
-\rangle + \| C \|_2^2\)</span> with <span class="math inline">\(\widehat{C}_R\)</span> being the truncated
-estimator having rank <span class="math inline">\(R\)</span>. Assuming
-that the mean is zero we, in our modification we’ll get: <span class="math display">\[
+<p>This approach is a modfication of the KDE method. As indicated in <a href="https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca">Notes
+06 - T. Masak</a> the goal is to minimize the rank <span class="math inline">\(R\)</span> in</p>
+<p><span class="math display">\[
+\mathbb{E} \| \widehat{C}_R - C \|_2^2 = \mathbb{E}\| \widehat{C}_R \| -
+2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_2^2
+\]</span></p>
+<p>with <span class="math inline">\(\widehat{C}_R\)</span> being the
+truncated estimator having rank <span class="math inline">\(R\)</span>.
+Assuming that the mean is zero we, in our modification we’ll get: <span class="math display">\[
 \mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle
 \underbrace{\mathbb{E}[ \widehat{C}_R^{(-n)}}_{\approx \mathbb{E}
 \widehat{C}_R}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle
 \approx \mathbb{E} \langle \widehat{C}_R , X_n X_n^\top \rangle
-\]</span> Therefore, since the truncated coveriance estimator isn’t
-linear we obtain an approximation. Based on this strategy we’ll choose
-the rank <span class="math inline">\(R\)</span> to minimize our CV.</p>
+\]</span></p>
+<p>Therefore, since the truncated covariance estimator isn’t linear we
+obtain an approximation. Based on this strategy we’ll choose the rank
+<span class="math inline">\(R\)</span> to minimize our CV. Computing
+this approximation and averaging it for every observation, aswell as
+neglecting the <span class="math inline">\(\| C \|_2^2\)</span>
+(constant error) will produce a useful measure error. Overall, we
+implement this method as follows for every rank <span class="math inline">\(R\)</span>:</p>
+<ul>
+<li>Estimate Covariance <span class="math inline">\(\widehat{C}\)</span>
+from given data <span class="math inline">\(X\)</span></li>
+<li>Decompose <span class="math inline">\(\widehat{C}\)</span> and set
+<span class="math inline">\(p-R\)</span> smallest eigenvalues to <span class="math inline">\(0\)</span></li>
+<li>Compute Frobenius-norm <span class="math inline">\(\|\cdot\|=\|\cdot\|_F\)</span></li>
+<li><strong>for</strong> <span class="math inline">\(j\)</span> in <span class="math inline">\(1,\dots,n\)</span>:
+<ul>
+<li>calculate <span class="math inline">\(\widehat{C}_R^{(-j)}\)</span>
+by estimating the covariance of <span class="math inline">\(X^{(-j)}\)</span>, <span class="math inline">\(j\)</span> being the missing observation in <span class="math inline">\(X\)</span></li>
+<li>reduce <span class="math inline">\(\|\widehat{C}_R\|_F\)</span> by
+<span class="math inline">\(\frac{2}{n}\widehat{C}_R\cdot\widehat{C}_R^{(-j)}\)</span></li>
+</ul></li>
+<li><strong>end</strong></li>
+<li>Choose <span class="math inline">\(R\)</span> according to the
+minimal error</li>
+</ul>
+<p>In the for-loop we realize that it actually resembles a Leave-One-Out
+Cross-validation. In this Method we are trading off high computational
+cost against a stable solution.</p>
 </div>
 <div id="matrix-completion-method" class="section level3">
 <h3>2.5 Matrix completion method</h3>
