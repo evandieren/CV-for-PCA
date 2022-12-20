@@ -32,3 +32,42 @@ MatrixCompletion <- function(X){
   }
   return(mse5)
 }
+
+
+# ALMOND: extract only core function for clearity --------------------------
+
+MatrixCompletion_only <- function(X, X0, r, tol = 1e-4, maxsteps = 100){
+  # args: X: matrix containing data - missing values are NA
+  # X0: complete matrix of the same format as X, initial value for algorithm
+  # tol, maxsteps: error tolerance and maximum steps, so algo doesn't run forever
+  # returns: Completed matrix
+  
+  # Create bivariate index set for observed data
+  n <- nrow(X)
+  p <- ncol(X)
+  biv_index <- is.na(X)
+  
+  steps <- 1
+  crit <- TRUE
+  M_new <- X0
+  
+  # Iterative-hard thresholding algorithm
+  while(crit > tol){
+      M_old <- M_new
+      svd_M <- svd(M_old)
+      svd_M$d[-(1:r)] <- 0
+      M_trunc <- svd_M$u %*% diag(svd_M$d) %*% t(svd_M$v)
+      M_new <- ifelse(is.na(X), M_trunc, X)
+      steps <- steps + 1
+      crit <- norm(M_new-M_old, type="F")/norm(M_new, type="F")
+      if(steps == maxsteps) {
+        warning(paste("Stopped after iteration", steps, 
+                      "with stopping criterion", crit, "> tol."))
+        break
+      }
+    }
+    print(paste0("MatrixCompletion: Steps ", steps, ", for rank r ", r))
+  return(M_new)
+}
+
+
