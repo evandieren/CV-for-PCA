@@ -5,7 +5,6 @@ source("Missing_data.R")
 source("KDEApproach.R")
 source("MatrixCompletion.R")
 
-
 SimulationStudy <- function(method, n, p, K, r, sim){
   # method: CV method choosen
   # r: rank of truncated data set
@@ -116,14 +115,14 @@ SimulationStudy <- function(method, n, p, K, r, sim){
 }
 
 
-
 n <- 100
 p <- 8
 K <- 5
 sim <- 10
 r <- 3 # truncated dimension of data set
 
-#set.seed(2001)
+set.seed(1312)
+
 # WrongPCA, WrongPCAImproved, MissingData, MatrixCompletion, KDEApproach
 chosen <- SimulationStudy(KDEApproach, n, p, K, r, sim)
 chosen[[1]]

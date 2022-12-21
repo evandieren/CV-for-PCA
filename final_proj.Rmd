@@ -41,7 +41,7 @@ library(mvtnorm)
 
 ## 1.1 Problem description
 
-When dealing with modern large datasets, the observations' dimensionality often becomes a problem regarding the interpretability of the dataset, or for its vizualisation, especially during the data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset (aka variance). An example of PCA usage is bringing a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and afterwards identifying clusters. It does so by computing Principal components from the dataset and then projecting datapoints to this new basis.
+When dealing with modern large datasets, the observations' dimensionality often becomes a problem regarding the interpretability of the dataset, or for its vizualisation, especially during the data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset (i.e. variance). An example of PCA usage is bringing a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and afterwards identifying clusters. It does so by computing Principal components from the dataset and then projecting datapoints to this new basis.
 
 Mathematically speaking, we can define principal components as an orthonormal basis of unit vectors which sequentially capture the most variance in the data. Practically, the PCs can be found with the following optimization problems for a given centered Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
 \[
@@ -60,7 +60,7 @@ knitr::include_graphics("./Figures/PCA_p_2_example.png")
 ```
 
 
-This project will focus on finding the optimal number of principal components ($r$), which dictates a trade-off between the model's complexity and its interpretability. In fact, higher the $r$, higher the explained variance, but less interpretable the dataset. To optimally choose the number of PCs, several techniques have been created, such as the method of percentage of variance explained, the scree-plot method or Cross-validation for PCA.
+This project focuses on finding the optimal number of principal components ($r$), which dictates a trade-off between the model's complexity and its interpretability. In fact, higher the $r$, higher the explained variance, but less interpretable the dataset. To optimally choose the number of PCs, several techniques have been created, such as the method of percentage of variance explained, the scree-plot method or Cross-validation for PCA.
 
 In this report, one will first find a presentation of each Cross-Validation method for PCA with an initial description, followed by a pseudo-code in [2. Cross-validation on PCA methods]. Then, those methods will be ran on simulated datasets with different parameters in [3. Simulation and comparison of CV methods]. Furthermore, the percentage of variance explained and the scree-plots methods will be described and tested in [4. Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well as next steps which could be conducted regarding this subject.
 
@@ -81,92 +81,94 @@ A numerical method to solve the least square problem in the top of the algorithm
 
 ### 2.2 Artificially turn the unsupervised problem into a supervised one
 
-This method tries to "correct" the [2.1 Naïve Approach] by inducing a Bias-Variance trade-off for the $Err_k$ function. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Multivariate Gaussian dataset with $n$ observations and $p$ variables, mean $\mu$ and covariance $\Sigma$. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below :
+This method corrects the [2.1 Naïve Approach] by introducing a Bias-Variance trade-off for the $Err_k$ function. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Multivariate Gaussian dataset with $n$ observations and $p$ variables, mean $\mu$ and covariance $\Sigma$. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below :
 
   * split data into $K$ folds $J_1,\ldots,J_K$ (row indices)
   * **for** $k=1,\ldots,K$:
-    - Compute $\hat{\mu}$ and $\hat{\Sigma} := \hat{\Sigma}_r$ (the empirical estimator truncated to rank r) on $\mathbf{X}\setminus J_k$. + ADD NOISE
-    - Split data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart$
+    - Compute $\hat{\mu}$ and $\hat{\Sigma} := \hat{\Sigma}_r$ (the empirical estimator truncated to rank r) on $\mathbf{X}\setminus J_k$.
+    - Split data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart
     - Predict the missing part from the observed part using the $\hat{\mu}$ and $\hat{\Sigma}_r$
-    - That is compute $\hat{\mathbf{x}}^m_{miss} = \mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}] = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}\hat{\Sigma}^\dagger_{obs}(\mathbf{x}^m_{obs}-\hat{\mu}_{obs})$, where $\hat{\Sigma}^\dagger_{obs}$ is considered the Pseudoinverse of $\hat{\Sigma}_{obs,obs}$ and $\hat{\mu}_{miss},\hat{\mu}_{obs}$ is $\hat{\mu}$ split according to the "missed" and "observed" variable indices.
+    - That is compute $\hat{\mathbf{X}}^m_{miss} = \mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}] = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}\hat{\Sigma}^\dagger_{obs}(\mathbf{X}^m_{obs}-\hat{\mu}_{obs})$, where $\hat{\Sigma}^\dagger_{obs}$ is the pseudoinverse of $\hat{\Sigma}_{obs,obs}$ and $\hat{\mu}_{miss},\hat{\mu}_{obs}$ are $\hat{\mu}$ split according to the "missed" and "observed" variable indices.
   * **end for**
-  * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k} \|\hat{\mathbf{x}}^m_{miss}-\mathbf{x}^m_{miss}\|^2_2$
+  * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k} \|\hat{\mathbf{X}}^m_{miss}-\mathbf{X}^m_{miss}\|^2_2$
 
-Before continuing with our simulations we want to emphasize on some more and some less obvious clues in order to avoid any confusion. When we truncate $\hat{\Sigma}$ to $\hat{\Sigma}_r$ in every fold, we actually take its SVD decomposition and "cut off" its $p-r$ smallest singular values. Hence, we reduce the rank of the covariance of $\mathbf{X}$, but we preserve its dimension which allows us to estimate $\mathbf{x}^m_{miss}$ in the later part of the algorithm. When splitting the observations in every iteration of the for loop, it naturally comes to mind if we should always take the same or a different (random) split. We went for the first possibility as that additional random factor would be negligible by the SLLN. Nevertheless, it makes sense to keep two equally sized parts in order to have a proper estimation basis without overestimating.
-When we estimate $\hat{\mathbf{x}}^m_{miss}$ we use a specific formula that emerges from the law of our data set $\mathbf{X}$. Hence, it is only applicable in this form to Gaussian distributed observations $\mathbf{x} \in \mathbb{R}^p$. The estimation also makes use of the Pseudoinverse of $\hat{\Sigma}_{obs,obs}$ denoted by $\hat{\Sigma}^+_{obs,obs}$. We use this convention in order to avoid singularity conflicts. The Pseudoinverse is easily callable in R by the function `ginv()` embedded in the `MASS` package.
+It is important to emphasize some points of this aforementioned algorithm. When we truncate $\hat{\Sigma}$ to $\hat{\Sigma}_r$ in every fold, we do it by eigenvalue decomposition, then store $\alpha = \sum_{i=r+1}^p \lambda_i$, and then set to zero those $p-r$ smallest eigenvalues. Afterwards, we compute $\hat{\Sigma}_r = U\tilde{V}U^T$ and then add $\alpha / p$ to its diagonal. This is done to smooth the drop of eigenvalues when truncating the covariance estimator and avoid undesirable results of our algorithms. 
+
+Hence, we reduce the rank of the covariance of $\mathbf{X}$, but we preserve its dimension which allows us to estimate $\mathbf{x}^m_{miss}$ in the later part of the algorithm. When splitting the observations in every iteration of the for loop, it naturally comes to mind if we should always take the same or a different (random) split. The first possibility was chosen as that additional random factor would be negligible by the SLLN. Nevertheless, it makes sense to keep two equally sized parts in order to have a proper estimation basis without overestimating. This also gives us a good understanding whether our estimation method will work in harsh conditions, i.e. if half of the data is missing.
+When estimating $\hat{\mathbf{x}}^m_{miss}$, the linear estimator is used as it emerges from the law of our data set $\mathbf{X}$. Hence, it is only applicable in this form to Gaussian distributed observations $\mathbf{x} \in \mathbb{R}^p$. The estimation also makes use of the pseudoinverse of $\hat{\Sigma}_{obs,obs}$ denoted by $\hat{\Sigma}^\dagger_{obs}$. We use this convention in order to avoid singularity issues when inverting a block of the truncated covariance estimator. The pseudoinverse is easily callable in R by the function `ginv()` embedded in the `MASS` package.
 
 ### 2.3 Missing data approach
 
-Here it is assumed that the rows $X_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $X=(X_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a Gaussian random variable $X$. That is, the rows have with a mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that $rank(\Sigma)=r$ for $r=1,…,R$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ on observed data by the EM algorithm and the set of missed and observed data is randomly selected for each fold $K_i$. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
+Here it is assumed that the rows $\mathbf{X}_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $\mathbf{X}=(\mathbf{X}_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a multivariate Gaussian random variable of mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that rank$(\Sigma)=r$ for $r=1,…,R$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ based on observed data by the EM algorithm while the set of missed and observed data is randomly selected at the beginning of the algorithm. Then, it performs more or less the same steps as the previous algorithm to find the optimal number of PCs. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
 
 Let $\tilde{X}$ be the dataset containing missing values randomly placed on the original $N \times p$ dataset. The EM algorithm works as follows :
 
   * Initialize $\hat{\mu} = \frac{1}{N}\sum_{n=1}^N(\tilde{X}^{obs}_{n})$ and $\hat{\Sigma} = I_{p\times p}$, where $\tilde{X}_{obs}$ is the dataset restricted to observed values.
-  * Set $\hat{\Sigma}^{old} = C\hat{\Sigma}$, and $tol = 0.01$ for a given constant $C$ big enough to enter the while loop
-  * **while** $(||\hat{\Sigma}-\hat{\Sigma}^{old}||_F > tol*||\hat{\Sigma}^{old}||_F)$ where $||.||_F$ is the Frobenius norm
+  * Set $\hat{\Sigma}^{old} = C\hat{\Sigma}$, and $tol = 0.01$ for a given constant $C$ big enough to enter the while loop (e.g. $C = 600$)
+  * **while** $(||\hat{\Sigma}-\hat{\Sigma}^{old}||_F > tol||\hat{\Sigma}^{old}||_F)$ where $||.||_F$ is the Frobenius norm
     - Set $\hat{\Sigma}^{old} = \hat{\Sigma}$
     - Estimate $\tilde{X}_{miss}^{n}$ by a linear estimator : $\tilde{X}_{miss}^n = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs} \hat{\Sigma}_{obs}^{\dagger}(\tilde{X}_{obs}^n-\hat{\mu}_{obs})$
-    - Define $\hat{X}$ being $\tilde{X}$ with missing values filled by the linear estimator above.
-    - Set $\hat{\mu} = mean(\hat{X})$, $\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N (\hat{X}_i-\hat{\mu})(\hat{X}_i-\hat{\mu})^T$, also known as the two MLE estimators
+    - Set $\hat{\mu} =\frac{1}{N}\sum_{n=1}^N(\tilde{X}_{n})$, $\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N (\tilde{X}_i-\hat{\mu})(\tilde{X}_i-\hat{\mu})^T$, i.e. the two MLE estimators
   * **end while**
   * return the estimated $\hat{\mu}, \hat{\Sigma}$
 
-This method slightly differs from the one presented in [Notes 05 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/05_EM.html), mainly due to poor results when estimating $\hat{\Sigma}$. Another matrix approach for the EM algorithm was also tried from Machine Learning, Murphy but was also unsuccessfull when predicting $\hat{\Sigma}$.
+This method slightly differs from the one presented in [Notes 05 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/05_EM.html), mainly due to poor results when estimating $\hat{\Sigma}$ and light confusion about notations used in the aforementioned implementation. Another matrix approach for the EM algorithm was also tried from [Machine Learning, Murphy](http://noiselab.ucsd.edu/ECE228/Murphy_Machine_Learning.pdf) which gave good results for $\hat{mu}$ but was also unsuccessful when predicting $\hat{\Sigma}$ when $r$ becomes too large.
 
 Below is the pseudo-code for the Missing Data method :
 
-  * split the dataset in $K$ folds by randomly selecting indices from the bivariate index set $J := \{(n,j) | n = 1,...,N, \quad, j=1,...,p\}$.
+  * split the dataset in $K$ folds $J_1,\ldots,J_K$ (row indices)
+  * Compute the bivariate set of missed data $\Omega$
   * **for** $k=1,\ldots,K$:
-    - Compute the bivariate set of missed data $\Omega$
-    - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the dataset $X$ and $\Omega$ as inputs
-    - Truncate $\hat{\Sigma}$ to a rank $r$ matrix $\hat{\Sigma}_r$ by eigenvalue decomposition, + ADD NOISE
+    - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the dataset $X$ and missing indices $\Omega$
+    - Truncate $\hat{\Sigma}$ to a rank $r$ matrix $\hat{\Sigma}_r$ by eigenvalue decomposition.
     - Reuse the missed data $\Omega$ to split the data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart
-    - Predict the missing part from the observed part using the $\hat{\mu}$ and $\hat{\Sigma}_r$
-    - That is compute $\hat{\mathbf{x}}^m_{miss} = \mathbb{E}_{\hat{\mu},\hat{\Sigma}_r}[\mathbf{X}^m_{miss}|\mathbf{X}^m_{obs}=\mathbf{x}^m_{obs}] = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs}\hat{\Sigma}^\dagger_{obs}(\mathbf{x}^m_{obs}-\hat{\mu}_{obs})$, where $\hat{\Sigma}^\dagger_{obs}$ is considered the Pseudoinverse of $\hat{\Sigma}_{obs,obs}$ and $\hat{\mu}_{miss},\hat{\mu}_{obs}$ is $\hat{\mu}$ split according to the "missed" and "observed" part
+    - Estimate the missing part from the observed part with a linear estimator using the $\hat{\mu}$ and $\hat{\Sigma}_r$ as previously described in the last CV method.
   * **end for**   
-  * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k}
-
+  * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k} \|\hat{\mathbf{X}}^m_{miss}-\mathbf{X}^m_{miss}\|^2_2$
+  
+  As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the dataset and can be seen as holes in the dataset, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the dataset, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ did the job.
 
 ### 2.4 KDE modified approach
-This approach is a modfication of the KDE  method. As indicated in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca) the goal is to minimize the rank $R$ in
+This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian dataset of size $n \times p$ The goal is to minimize with respect to $R$ the following quantity :
 
 \[
-\mathbb{E} \| \widehat{C}_R - C \|_2^2 = \mathbb{E}\| \widehat{C}_R \| - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_2^2
+\mathbb{E} \| \widehat{C}_R - C \|_F^2 = \mathbb{E}\| \widehat{C}_R \|_F - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_F^2
 \]
 
-with $\widehat{C}_R$ being the truncated estimator having rank $R$.
-Assuming that the mean is zero we, in our modification we'll get:
+with $\widehat{C}_R$ being the truncated covariance estimator of rank $R$, $C$ being the covariance matrix and $\|.\|_F$ being the Frobenius norm while $\langle X, Y \rangle$ represents the sum of all elements from the Hadamard product of the two matrices $X,Y$, or in mathematical terms : $\langle X, Y \rangle := \sum_{i,j}X_{i,j}Y_{i,j}$.
+Assuming that the mean of $\mathbf{X}$ is zero, we get:
 \[
 \mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_R^{(-n)}}_{\approx \mathbb{E} \widehat{C}_R}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_R , X_n X_n^\top \rangle
 \]
 
-Therefore, since the truncated covariance estimator isn't linear we obtain an approximation. Based on this strategy we'll choose the rank $R$ to minimize our CV. Computing this approximation and averaging it for every observation, aswell as neglecting the $\| C \|_2^2$ (constant error) will produce a useful measure error. Overall, we implement this method as follows for every rank $R$:
+Therefore, since the truncated covariance estimator is not linear we obtain an approximation, which we will plug back into the initial quantity we wish to minimize. By differentiating the quantity with respect to $R$, we obtain the desired ranking as it will be the only value depending on $R$. Overall, we implement this method as follows for every rank $R$:
 
 * Estimate Covariance $\widehat{C}$ from given data $X$
-* Decompose $\widehat{C}$ and set $p-R$ smallest eigenvalues to $0$
-* Compute Frobenius-norm $\|\cdot\|=\|\cdot\|_F$
+* Decompose $\widehat{C}$ and set $p-R$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $R$ ($\widehat{C}_R$)
+* Set $Err_R = \|\widehat{C}_R\|_F$
 * **for** $j$ in $1,\dots,n$:
-  - calculate $\widehat{C}_R^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $X$
-  - reduce $\|\widehat{C}_R\|_F$ by $\frac{2}{n}\widehat{C}_R\cdot\widehat{C}_R^{(-j)}$
+  - Compute $\widehat{C}_R^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $X$ then truncate it to rank $R$.
+  - Subtract $\frac{2}{n}\langle\widehat{C}_R,\widehat{C}_R^{(-j)}\rangle$ from $Err_R$
 * **end**
-* Choose $R$ according to the minimal error
+* Choose $R^* = \underset{R}{\mathrm{arg\,min}} \quad Err_R$ according to the minimal error $Err_R$
 
-Stepping into the for-loop we realize that it actually resembles a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution.
+Stepping into the for-loop we realize that it actually resembles a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_R$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $R$
 
 ### 2.5 Matrix completion method
 
-This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $X \in \mathbb{R}^{N\times p}$, but just that $X$ has a finite rank. Indeed, for a given data matrix $X$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $X$. The matrix completion method consists of finding a matrix $\mathbf M$ of rank $R$ such that :
+This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $\mathbf{X} \in \mathbb{R}^{N\times p}$, but just that $X$ has a finite rank. Indeed, for a given data matrix $\mathbf{X}$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $\mathbf{X}$. The matrix completion method consists of finding a matrix $\mathbf M$ such that :
 
 \[
     \mathrm{arg \, min}_{\mathbf{M}=(M_{ij})_{i,j=1}^{N \times p}} \sum_{(i,j) \in \Omega} (X_{ij} - M_{ij})^2 \quad \mathrm{s.t.} \quad \mathrm{rank}(\mathbf M)=R
     \]
 
-This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with respect to least-square error on the observed data. However, finding the solution of such a optimization problem is $NP$-hard, so one can use the following iterative algorithm to find local best candidates for the matrix $\mathbb M$ :
+This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with respect to least-square error on the missed data. However, finding the solution of such a optimization problem is $NP$-hard, so one can use the following iterative algorithm to find local best candidates for the matrix $\mathbb M$ :
 
 
-  * Select an initial candidate $\mathbf{M}^{(0)}$ (here $\mathbf{M}^{(0)} = X$)
-  * Set $l=1$
+  * Select an initial candidate $\mathbf{M}^{(0)}$, here : $M^{(0)}$ is a set of multivariate Guassian random variables with mean $\hat{\mu}_{obs}$ and covariance $I_{p\times p} where $\hat{\mu}_{obs}$ is the empirical mean computed for each column with its respective observed entries of the matrix.
+  * Set $l=0$, $tol = 10^{-4}$
   * **do**
+    - $l += 1$
     - Compute the SVD of $\mathbf{M}^{(l-1)}$, i.e. $\mathbf{M}^{(l-1)} = UDV^T$
     - Copy $D$ into $\widetilde{D}$ and set the $p-R$ diagonal elements of $\widetilde{D}$ to zero (truncating to rank $R$)
     - Set $\widetilde{M} = U\widetilde{D}V^T$, the new matrix of rank $R$.
@@ -175,8 +177,10 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with
       \mathbf{M}^{(l)} = \begin{cases} X_{ij} \quad \text{for } (i,j) \in \Omega \\
                                        \widetilde{M}_{i,j} \quad \text{for } (i,j) \notin \Omega \end{cases}
       \]
-  * **while $||M^{(l)}-M^{(l-1)}||_F> tol$**:
-  * Store the error $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment with different values of $R$. Pick the $R$ which gives the lowest error.
+  * **while $\|M^{(l)}-M^{(l-1)}\|_F> tol\|M^{(l)}\|_F$ and $l < 1000$**:
+  * Store the error $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment for each value of $R$ from $1$ to $p$, then pick the $R$ which gives the lowest error.
+  
+  We decided multiply the initial $\|M^{(l)}-M^{(l-1)}\|_F$ stopping criteria by $\|M^{(l)}\|_F$ to take into account the magnitude of the elements in $M$, and added the condition $l<1000$ in case of the algorithm would not converge to the desired tolerance in a reasonable amount of time. In other words, the algorithm stops and returns the matrix $M^{(l)}$ if there was a change of less than $0.01\%$ from the previous matrix $M^{(l-1)}$, or if we go above $1000$ iterations.
     
 ## 3. Simulation and comparison of CV methods
 
@@ -227,7 +231,6 @@ In order to have valid comparisons across all of our methods and validate their 
 ### 4.1 Percentage of variance explained method
 
 The percentage of variance explained method is based on the dataset's covariance matrix, and the percentage of variance vs. the total variability (sum of diagonal entries of the original covariance matrix). When computing the PCs for a given dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$, we create an orthonormal basis with a corresponding diagonal covariance matrix with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_r \in \mathbb{R}$ will be a decreasing function. The method of percentage of variance explained is simply to select the first $r$ components such that $\sum_{i=1}^r \lambda_i > \tau V$ for an arbitrary treshold $\tau$ and a total variability $V = \sum_{i=1}^p \lambda_i$.
-
 
 ### 4.2 Scree-plot method (non-automatic)
 

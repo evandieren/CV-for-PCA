@@ -97,7 +97,7 @@ EM_MissingData_Monica <- function(X,matrix_miss,n_iterations){
 
 
 MissingData <- function(X, folds){
-  # args: X matrix containing data, pca_vec containing index of pca (dimension r), K amount of CV-Folds
+  # args: X matrix containing data, folds is the indexes of the rows contained in each fold
   # returns: MSE of the CV
 
   n <- nrow(X)
