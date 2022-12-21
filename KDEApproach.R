@@ -29,20 +29,20 @@ KDEApproach <- function(X, samples = NaN){
   return(mse4)
 }
 
-#set.seed(11)
-n <- 100
-p <- 5
-r <- 3
-X <- array(rnorm(n*p,0,1),c(n,p))
-svd_X <- svd(X)
-svd_X$d[-(1:r)] <- 0
-X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v)
-X_tronc_noise <- X_tronc + rmvnorm(100, mean=rep(0, p), sigma=svd_X$d[r]*0.1*diag(p))
-#samples <- matrix(sample(1:n),ncol=5)
-
-
-out_tronc <- KDEApproach(X_tronc)
-out_tronc_noise <- KDEApproach(X_tronc_noise)
-par(mfrow=c(1,2))
-plot(1:p, out_tronc, "l", col=1)
-plot(1:p, out_tronc_noise, "l", col=2)
+# #set.seed(11)
+# n <- 100
+# p <- 5
+# r <- 3
+# X <- array(rnorm(n*p,0,1),c(n,p))
+# svd_X <- svd(X)
+# svd_X$d[-(1:r)] <- 0
+# X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v)
+# X_tronc_noise <- X_tronc + rmvnorm(100, mean=rep(0, p), sigma=svd_X$d[r]*0.1*diag(p))
+# #samples <- matrix(sample(1:n),ncol=5)
+# 
+# 
+# out_tronc <- KDEApproach(X_tronc)
+# out_tronc_noise <- KDEApproach(X_tronc_noise)
+# par(mfrow=c(1,2))
+# plot(1:p, out_tronc, "l", col=1)
+# plot(1:p, out_tronc_noise, "l", col=2)

@@ -6,7 +6,7 @@ source("KDEApproach.R")
 source("MatrixCompletion.R")
 
 
-SimulationStudy <- function(method, r, sim){
+SimulationStudy <- function(method, n, p, K, r, sim){
   # method: CV method choosen
   # r: rank of truncated data set
   # sim: amount of simulation runs
@@ -44,15 +44,15 @@ SimulationStudy <- function(method, r, sim){
     samples <- matrix(sample(1:n),ncol=K)
     
     df <- rmvnorm(n = n, mean = rep(0, p), sigma = diag(p)) # basis real data set 0
-    data0 <- dataset(df,r,0.1,0.01,0.05,0.05)
+    data0 <- dataset(df,r,0,0,0,0)
     
     mat <- matrix(rnorm(p*p, mean = 0, sd = 1), nrow = p, ncol = p)
     df <- rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat)) # basis real data set 1
-    data1 <- dataset(df,r,0.1,0.01,0.05,0.05)
+    data1 <- dataset(df,r,0.05,0.002,0.001,0.001)
     
     mat <- matrix(1:p^2, nrow = p, ncol = p)/p
     df <- rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat)) # basis real data set 2
-    data2 <- dataset(df,2,0.1,0.01,0.05,0.05)
+    data2 <- dataset(df,2,0.05,0.002,0.001,0.001)
     
     for (da in 1:4) {
       lsEigen0[[da]][i,] <- svd(data0[[da]])$d
@@ -63,11 +63,11 @@ SimulationStudy <- function(method, r, sim){
       lsmethod1[[da]][i,] <- method(data1[[da]], samples)
       lsmethod2[[da]][i,] <- method(data2[[da]], samples)
       
-      min_err0 <- which(lsmethod0[[da]][i,]==min(lsmethod0[[da]][i,]))
+      min_err0 <- which.min(lsmethod0[[da]][i,])
       choose0[[da]][min_err0] <- choose0[[da]][min_err0] +1
-      min_err1 <- which(lsmethod1[[da]][i,]==min(lsmethod1[[da]][i,]))
+      min_err1 <- which.min(lsmethod1[[da]][i,])
       choose1[[da]][min_err1] <- choose1[[da]][min_err1] +1
-      min_err2 <- which(lsmethod2[[da]][i,]==min(lsmethod2[[da]][i,]))
+      min_err2 <- which.min(lsmethod2[[da]][i,])
       choose2[[da]][min_err2] <- choose2[[da]][min_err2] +1
     }
   }
@@ -75,20 +75,20 @@ SimulationStudy <- function(method, r, sim){
   
   # Scree plots
   par(mfrow=c(1,4))
-  for (i in 1:4) {plot(1:p, colMeans(lsEigen0[[i]]), xlab="kth Eigenvalue", ylab="Value", main=names(data)[i], type = "b", pch = 19, lty = 1, col = 1)}
+  for (i in 1:4) {plot(1:p, colMeans(lsEigen0[[i]]), xlab="kth Eigenvalue", ylab="Value", main=names(data0)[i], type = "b", pch = 19, lty = 1, col = 1)}
   title("Scree plot data set 0", line = - 1, outer = TRUE)
-  for (i in 1:4) {plot(1:p, colMeans(lsEigen1[[i]]), xlab="kth Eigenvalue", ylab="Value", main=names(data)[i], type = "b", pch = 19, lty = 1, col = 1)}
+  for (i in 1:4) {plot(1:p, colMeans(lsEigen1[[i]]), xlab="kth Eigenvalue", ylab="Value", main=names(data1)[i], type = "b", pch = 19, lty = 1, col = 1)}
   title("Scree plot data set 1", line = - 1, outer = TRUE)
-  for (i in 1:4) {plot(1:p, colMeans(lsEigen2[[i]]), xlab="kth Eigenvalue", ylab="Value", main=names(data)[i], type = "b", pch = 19, lty = 1, col = 1)}
+  for (i in 1:4) {plot(1:p, colMeans(lsEigen2[[i]]), xlab="kth Eigenvalue", ylab="Value", main=names(data2)[i], type = "b", pch = 19, lty = 1, col = 1)}
   title("Scree plot data set 2", line = - 1, outer = TRUE)
   
   # Error of CV Methods
   par(mfrow=c(1,4))
-  for (i in 1:4) {plot(1:p, colMeans(lsmethod0[[i]]), xlab="Rank r", ylab="Value", main=paste0("Err ",names(data)[i]), type = "b", pch = 19, lty = 1, col = 1)}
+  for (i in 1:4) {plot(1:p, colMeans(lsmethod0[[i]]), xlab="Rank r", ylab="Value", main=paste0("Err ",names(data0)[i]), type = "b", pch = 19, lty = 1, col = 1)}
   title("Error data set 0", line = - 1, outer = TRUE)
-  for (i in 1:4) {plot(1:p, colMeans(lsmethod1[[i]]), xlab="Rank r", ylab="Value", main=paste0("Err ",names(data)[i]), type = "b", pch = 19, lty = 1, col = 1)}
+  for (i in 1:4) {plot(1:p, colMeans(lsmethod1[[i]]), xlab="Rank r", ylab="Value", main=paste0("Err ",names(data1)[i]), type = "b", pch = 19, lty = 1, col = 1)}
   title("Error data set 1", line = - 1, outer = TRUE)
-  for (i in 1:4) {plot(1:p, colMeans(lsmethod2[[i]]), xlab="Rank r", ylab="Value", main=paste0("Err ",names(data)[i]), type = "b", pch = 19, lty = 1, col = 1)}
+  for (i in 1:4) {plot(1:p, colMeans(lsmethod2[[i]]), xlab="Rank r", ylab="Value", main=paste0("Err ",names(data2)[i]), type = "b", pch = 19, lty = 1, col = 1)}
   title("Error data set 2", line = - 1, outer = TRUE)
   
   c <- c()
@@ -112,23 +112,22 @@ SimulationStudy <- function(method, r, sim){
   rownames(chosen2) <- c("2: High noise", "2: Low noise", "2: Differing noise", "2: Increasing noise")
   chosen2[1:4, 1:p] <- t(sapply(1:4, function(i){cbind(d,choose2[[i]]/sim)}))
   
-  return(list(chosen0, chosen1, chosen2))
+  return(list(chosen0, chosen1, chosen2, lsmethod0, lsmethod1, lsmethod2))
 }
 
 
 
-n <- 1000
-p <- 10
-K <- 10
-sim <- 20
+n <- 100
+p <- 8
+K <- 5
+sim <- 10
 r <- 3 # truncated dimension of data set
 
-chosen <- SimulationStudy(WrongPCA, r, sim)
+#set.seed(2001)
+# WrongPCA, WrongPCAImproved, MissingData, MatrixCompletion, KDEApproach
+chosen <- SimulationStudy(KDEApproach, n, p, K, r, sim)
+chosen[[1]]
+chosen[[2]]
+chosen[[3]]
 
 
-
-test <- function(x, y = NaN){
-  print(x)
-}
-
-test("3", c(2,3,2,2))

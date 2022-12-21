@@ -144,30 +144,30 @@ MissingData <- function(X, folds){
 }
 
 
-n <- 1000
-p <- 20
-r <- 7
-K <- 5
-X <- array(rnorm(n*p,0,1),c(n,p))
-svd_X <- svd(X)
-r_val <- svd_X$d[r]
-svd_X$d[-(1:r)] <- 0
-X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v) + rmvnorm(n = n, mean = rep(0,p), sigma = 0.001*r_val*diag(p))
-samples <- matrix(sample(1:n),ncol=K)
-
-percent_miss = floor(p/2)
-matrix_miss <- matrix(data=0,n,percent_miss)
-for (j in 1:n)
-  matrix_miss[j,] <- sample(1:p,percent_miss)
-
-out <- EM_MissingData(X_tronc,matrix_miss)
-print(norm(out$sig-cov(X_tronc),type="F")/norm(cov(X_tronc),type="F"))
-
-out_miss <- MissingData(X_tronc, samples)
-
-plot(1:p,out_miss,type="l")
-
-print(which.min(out_miss))
+# n <- 1000
+# p <- 20
+# r <- 7
+# K <- 5
+# X <- array(rnorm(n*p,0,1),c(n,p))
+# svd_X <- svd(X)
+# r_val <- svd_X$d[r]
+# svd_X$d[-(1:r)] <- 0
+# X_tronc <- svd_X$u %*% diag(svd_X$d) %*% t(svd_X$v) + rmvnorm(n = n, mean = rep(0,p), sigma = 0.001*r_val*diag(p))
+# samples <- matrix(sample(1:n),ncol=K)
+# 
+# percent_miss = floor(p/2)
+# matrix_miss <- matrix(data=0,n,percent_miss)
+# for (j in 1:n)
+#   matrix_miss[j,] <- sample(1:p,percent_miss)
+# 
+# out <- EM_MissingData(X_tronc,matrix_miss)
+# print(norm(out$sig-cov(X_tronc),type="F")/norm(cov(X_tronc),type="F"))
+# 
+# out_miss <- MissingData(X_tronc, samples)
+# 
+# plot(1:p,out_miss,type="l")
+# 
+# print(which.min(out_miss))
 
 
 

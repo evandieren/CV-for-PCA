@@ -11,21 +11,32 @@ MatrixCompletion <- function(X, samples = NaN){
   n <- nrow(X)
   p <- ncol(X)
   mse5 <- rep(0, p)
-  biv_index <- matrix(sample(0:1, size = n*p, replace = T), nrow = n, ncol = p)
+  
+  percent_miss <- floor(p/2)
+
+  matrix_miss <- matrix(data=0,n,percent_miss)
+  for (j in 1:n)
+    matrix_miss[j,] <- sample(1:p,percent_miss)
   
   miss_X <- X
   for (i in 1:n){
-    for (j in 1:p){
-      if (biv_index[i,j] == 0){
-        miss_X[i,j] <- NA
-      }
-    }
+    miss_X[i,matrix_miss[i,]] <- NA
   }
+  
+  mu_obs <- colMeans(miss_X,na.rm = TRUE)
   
   # Iterative-hard thresholding algorithm
   for (r in 1:p) {
-    M_new <- MatrixCompletion_only(miss_X,X,r)
-    mse5[r] <- norm(X-M_new, type = "F")
+    X0 <- matrix(rnorm(n=n*p, mean=mu_obs, sd=1), ncol=p)
+    #X0 <- rmvnorm(n,mu_obs,cov(X))
+    
+    M_new <- MatrixCompletion_only(miss_X,X0,r)
+    
+    for (i in 1:n){
+      mse5[r] <- mse5[r] + sum((X[i,matrix_miss[i,]]-M_new[i,matrix_miss[i,]])^2)
+    }
+    
+    mse5[r] <- mse5[r]/(n*percent_miss)
   }
   return(mse5)
 }
