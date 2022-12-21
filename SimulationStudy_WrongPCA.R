@@ -1,62 +1,56 @@
 library(mvtnorm)
-source("WrongPCA.R")
+source("WrongPCAImproved.R")
 
-n <- 200
+n <- 1000
 p <- 10
-K = 5
-mean_df <- rep(0, p)
+K = 10
 
 sim <- 20
+
+# Store scree plots as lists
 lsEigen0 <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsEigen1 <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsEigen2 <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 
+# Store CV Errors as lists
 lsWrongPCA0 <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsWrongPCA1 <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 lsWrongPCA2 <- replicate(4, matrix(rep(0, sim*p), nrow=sim, ncol = p), simplify=F)
 
+# Store choosen dimensions
 choose0 <- replicate(4, rep(0, p), simplify=F)
 choose1 <- replicate(4, rep(0, p), simplify=F)
 choose2 <- replicate(4, rep(0, p), simplify=F)
+
+dataset <- function(df,r,hn,ln,dn,incn){
+  df_svd <- svd(df)
+  df_svd$d[-(1:r)] <- 0
+  last_sv <- df_svd$d[r]
+  df <- df_svd$u %*% diag(df_svd$d) %*% t(df_svd$v)
+
+  df_uni_high_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = hn*last_sv*diag(p))
+  df_uni_low_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = ln*last_sv*diag(p))
+  df_diff_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = diag(runif(n = p, min = 0, max = dn*last_sv)))
+  df_incr_noise <- df + rmvnorm(n=n, mean=rep(0, p), sigma=diag(last_sv*incn*c(1:p)/p))
+  return(list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise, "Increasing noise"=df_incr_noise))
+}
 
 for (i in 1:sim) {
   samples <- matrix(sample(1:n),ncol=K)
   
   r <- 3
-  df <- rmvnorm(n = n, mean = mean_df, sigma = diag(p)) # basis real data set 0
+  df <- rmvnorm(n = n, mean = rep(0, p), sigma = diag(p)) # basis real data set 0
   # truncate to rank r
-  df_svd <- svd(df)
-  df_svd$d[-(1:r)] <- 0
-  df <- df_svd$u %*% diag(df_svd$d) %*% t(df_svd$v)
-  # Gaussian data with uniform "high noise", "low noise", differing noise, increasing noise
-  df_uni_high_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(1.5, p)))
-  df_uni_low_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(0.2, p)))
-  df_diff_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(runif(n = p, min = 0, max = 2)))
-  df_incr_noise <- df + rmvnorm(n=n, mean=mean_df, sigma=diag(2*c(1:p)/p))
-  data0 <- list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise, "Increasing noise"=df_incr_noise)
+
+  data0 <- dataset(df,r,0.1,0.01,0.05,0.05)
   
   mat <- matrix(rnorm(p*p, mean = 0, sd = 1), nrow = p, ncol = p)
-  df <- rmvnorm(n = n, mean = mean_df, sigma = mat %*% t(mat)) # basis real data set 1
-  # truncate to rank r
-  df_svd <- svd(df)
-  df_svd$d[-(1:r)] <- 0
-  df <- df_svd$u %*% diag(df_svd$d) %*% t(df_svd$v)
-  # Gaussian data with uniform "high noise", "low noise", differing noise, increasing noise
-  df_uni_high_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(1.5, p)))
-  df_uni_low_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(0.2, p)))
-  df_diff_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(runif(n = p, min = 0, max = 2)))
-  df_incr_noise <- df + rmvnorm(n=n, mean=mean_df, sigma=diag(2*c(1:p)/p))
-  data1 <- list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise, "Increasing noise"=df_incr_noise)
-  
+  df <- rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat)) # basis real data set 1
+  data1 <- dataset(df,r,0.1,0.01,0.05,0.05)
+
   mat <- matrix(1:p^2, nrow = p, ncol = p)/p
-  df <- rmvnorm(n = n, mean = mean_df, sigma = mat %*% t(mat)) # basis real data set 2
-  # Gaussian data with uniform "high noise", "low noise", differing noise, increasing noise
-  df_uni_high_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(1.5, p)))
-  df_uni_low_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(rep(0.2, p)))
-  df_diff_noise <- df + rmvnorm(n = n, mean = mean_df, sigma = diag(runif(n = p, min = 0, max = 2)))
-  df_incr_noise <- df + rmvnorm(n=n, mean=mean_df, sigma=diag(2*c(1:p)/p))
-  data2 <- list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise, "Increasing noise"=df_incr_noise)
-  
+  df <- rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat)) # basis real data set 2
+  data2 <- dataset(df,2,0.1,0.01,0.05,0.05)
   
   for (da in 1:4) {
     lsEigen0[[da]][i,] <- svd(data0[[da]])$d
@@ -116,5 +110,18 @@ colnames(chosen2) <- sapply(1:p, function(i){append(c, paste0("Var",i))})
 rownames(chosen2) <- c("2: High noise", "2: Low noise", "2: Differing noise", "2: Increasing noise")
 chosen2[1:4, 1:p] <- t(sapply(1:4, function(i){cbind(d,choose2[[i]]/sim)}))
 
+test1 <- function(){
+  print("test1")
+}
+
+test2 <- function(){
+  print("test2")
+}
+
+usefunc <- function(x){
+  x()
+}
+
+usefunc(test2)
 
 
