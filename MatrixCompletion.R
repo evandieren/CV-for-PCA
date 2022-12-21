@@ -22,8 +22,6 @@ MatrixCompletion <- function(X){
     }
   }
   
-  print(miss_X)
-  
   # Iterative-hard thresholding algorithm
   for (r in 1:p) {
     M_new <- MatrixCompletion_only(miss_X,X,r)
