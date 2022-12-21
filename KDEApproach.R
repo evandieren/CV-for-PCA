@@ -3,7 +3,7 @@ library(mvtnorm)
 library(MASS)
 
 
-KDEApproach <- function(X){
+KDEApproach <- function(X, samples = NaN){
   # args: X matrix containing data
   # returns: error measure of truncated covariance to the real covariance (Frobenius norm)
   
