@@ -213,7 +213,7 @@ We run our simulation with $n=100$ observations per data set and $p=8$ variables
 
 ## Comparison with respect to noise
 
-For this analysis, we focus on $D_0$ and will vary the noise $\epsilon_i$ for $i \in [1,3]$. Hereafter are the errors for each CV method described in Section 2.
+For this analysis, we focus on $D_0 \in \mathbb{R}^{N \times p}$ and will vary the noise $\epsilon^i_p$ for $i \in [1,3]$. Hereafter are the errors for each CV method described in Section 2.
 
 ```{r Noise0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
 
@@ -369,8 +369,10 @@ The Scree-plot is again related to the eigenvalues of the newly created orthonor
 par(mfrow=c(1,3))
   for (i in 1:3){
     D <- D_0[[i]]
-    eigen_sig<-eigen(cov(D))
-    plot(1:p,eigen_sig$values,main=TeX(paste0("Eigenvalues of the $D_0^",i,"$ covariance")),type="b",ylab="Eigenvalue",
+    pcaD <- prcomp(D)
+    Sig_pcaD <- cov(pcaD$x)
+    eig_pca <- eigen(Sig_pcaD)
+    plot(1:p,eig_pca$values,main=TeX(paste0("Eigenvalues of the $D_0^",i,"$ covariance")),type="b",ylab="Eigenvalue",
          xlab="PCs")
     }
 ```
@@ -397,8 +399,10 @@ D_1 <- list(df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[1]*last_sv*diag(
 par(mfrow=c(1,3))
   for (i in 1:3){
     D <- D_1[[i]]
-    eigen_sig<-eigen(cov(D))
-    plot(1:p,eigen_sig$values,main=TeX(paste0("Eigenvalues of the $D_1^",i,"$ covariance")),type="b",ylab="Eigenvalue",
+    pcaD <- prcomp(D)
+    Sig_pcaD <- cov(pcaD$x)
+    eig_pca <- eigen(Sig_pcaD)
+    plot(1:p,eig_pca$values,main=TeX(paste0("Eigenvalues of the $D_1^",i,"$ covariance")),type="b",ylab="Eigenvalue",
          xlab="PCs")
     }
 ```
@@ -422,8 +426,10 @@ D_2 <- list(df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[1]*last_sv*diag(
 par(mfrow=c(1,3))
   for (i in 1:3){
     D <- D_2[[i]]
-    eigen_sig<-eigen(cov(D))
-    plot(1:p,eigen_sig$values,main=TeX(paste0("Eigenvalues of the $D_2^",i,"$ covariance")),type="b",ylab="Eigenvalue",
+    pcaD <- prcomp(D)
+    Sig_pcaD <- cov(pcaD$x)
+    eig_pca <- eigen(Sig_pcaD)
+    plot(1:p,eig_pca$values,main=TeX(paste0("Eigenvalues of the $D_2^",i,"$ covariance")),type="b",ylab="Eigenvalue",
          xlab="PCs")
     }
 ```
