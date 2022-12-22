@@ -330,7 +330,7 @@ COMMENTS
 
 The percentage of variance explained method is based on the dataset's covariance matrix, and its eigenvalues and the total variability (sum of diagonal entries of the covariance matrix). When computing the PCs for a given dataset $\mathbf{X} \in \mathbb{R}^{N \times p}$ of covariance $\Sigma$, we create an orthonormal basis with a corresponding diagonal covariance matrix $\Sigma_{PCA}$ with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_p \in \mathbb{R}$ of the new matrix will be a decreasing sequence. The method of percentage of variance explained is simply to select the first $r$ components such that $\frac{1}{V}\sum_{i=1}^r \lambda_i \ge \tau$ for an arbitrary threshold $\tau \in [0,1]$ and a total variability $V = \sum_{i=1}^p \lambda_i = tr(\Sigma_{PCA})$. Below are a few examples on the method on $D_0$:
 
-```{r percent, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=8,fig.height=4,fig.cap = "Eigenvalues of the PCA covariance matrix, with a treshold of 90% for $D_0$ with respect to noise"}
+```{r percent, echo=FALSE,out.width="90%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "Eigenvalues of the PCA covariance matrix, with a treshold of 90% for $D_0$ with respect to noise"}
   source("percent_var.R")
   n <- 100
   p <- 8
@@ -354,7 +354,6 @@ The percentage of variance explained method is based on the dataset's covariance
     pcaD<-prcomp(D)
     Sig_pcaD <- cov(pcaD$x)
     eig_pca <- eigen(Sig_pcaD)
-    print(eig_pca$values)
     plot(1:p,eig_pca$values,main=TeX(paste0("Eigenvalues of the PCA covariance, $D_0^",i,"$")),type="b",ylab="Eigenvalue",
          xlab="PCs")
     legend("topright",y=c(paste0("Optimal value of r found : ",percent_var(Sig_pcaD))))
