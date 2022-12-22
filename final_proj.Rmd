@@ -230,23 +230,20 @@ In order to have valid comparisons across all of our methods and validate their 
 
 ### 4.1 Percentage of variance explained method
 
-The percentage of variance explained method is based on the dataset's covariance matrix, and the percentage of variance vs. the total variability (sum of diagonal entries of the original covariance matrix). When computing the PCs for a given dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$, we create an orthonormal basis with a corresponding diagonal covariance matrix with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_r \in \mathbb{R}$ will be a decreasing function. The method of percentage of variance explained is simply to select the first $r$ components such that $\sum_{i=1}^r \lambda_i > \tau V$ for an arbitrary treshold $\tau$ and a total variability $V = \sum_{i=1}^p \lambda_i$.
+The percentage of variance explained method is based on the dataset's covariance matrix, and its eigenvalues and the total variability (sum of diagonal entries of the covariance matrix). When computing the PCs for a given dataset $\mathbf{X} \in \mathbb{R}^{N \times p}$ of covariance $\Sigma$, we create an orthonormal basis with a corresponding diagonal covariance matrix $\Sigma_{PCA}$ with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_p \in \mathbb{R}$ will be a decreasing sequence. The method of percentage of variance explained is simply to select the first $r$ components such that $\frac{1}{V}\sum_{i=1}^r \lambda_i \ge \tau$ for an arbitrary threshold $\tau \in [0,1]$ and a total variability $V = \sum_{i=1}^p \lambda_i = trace(\Sigma_{PCA})$.
 
 ### 4.2 Scree-plot method (non-automatic)
 
-
-The Scree-plot is again related to the eigenvalues of the newly created orthonormal basis of PCs. As shown above, the eigenvalues corresponding to the PCs are a decreasing sequence, so we get a graph as below when plotting the PCs index vs the eigenvalue :
+The Scree-plot is again related to the eigenvalues of the newly created orthonormal basis of PCs. As shown in the previous sub-section, the eigenvalues corresponding to the PCs are a decreasing sequence, so we get a graph as below when plotting the PCs index vs the eigenvalue :
 
 ```{r, echo=F, out.width='50%', fig.align='center'}
 knitr::include_graphics('./Figures/scree_plot_example.png')
 ```
 
-The Scree-plot method consists of choosing the value of $r$ which is the elbow of the graph as seen above. In this example, the optimal value of $r$ is $3$.
+The Scree-plot method consists of choosing the value of $r$ which corresponds to the elbow of the eigenvalue graph. In this example, the optimal value of $r$ is $3$.
 
 
 ### 4.3 Comparison with CV methods
-In regression methods and other similar techniques, the goal of CV is monitoring overfitting and calibrating hyperparameters. If we have a large amount of predictors, we would usually add regularization to the model.
-Therefore, we can use CV to tune model hyperparameters (e.g. $\lambda$ in LASSO). PCA also has an important hyperparameter to evaluate: the number of components in the model.  In a common way, many cluster analysis models require to choose the amount of clusters before fitting the model. Viewed from the perspective of matrix factorization, these are very similar problems.
-
+Compared to CV methods described in [2. Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the dataset or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot).
 
 ## 5. Conclusion
