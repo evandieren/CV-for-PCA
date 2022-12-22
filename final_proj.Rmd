@@ -9,32 +9,19 @@ output: bookdown::html_document2
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-**Work for 2.12-4.12:**
+**Todo**
 
-<span style="color:brown">Emanuele</span>
-<span style="color:orange">Noah</span>
-<span style="color:gray">Eliott</span>
-
-
-* Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots, use the same generated data for the different methods) - document along the way <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>
+* Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots, use the same generated data for the different methods) - document along the way
 
 * Report:
-  
-  * For **each** method explanation, pseudo-code, simulation & documentation, conclusion <span style="color:orange">Noah</span>, <span style="color:gray">Eliott</span>, <span style="color:brown">Emanuele</span>
+
   * Extend [1.3 Simulation dataset description] <span style="color:gray">Eliott</span>
   * Overall conclusion
 
   
 * Polishing:
 
-  * Consider and incorporate "General Feedback for Small Projects" - Manual 11 (Copied to our github)
-
-* Questions:
-  
-  * MatrixCompletion: Tolerance and CV
-  * MatrixCompletion: To what extent does noise influnence -_-
- 
-
+  * Consider and incorporate "General Feedback for Small Projects" - Manual 11
 
 # Introduction
 

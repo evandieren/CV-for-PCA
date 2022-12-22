@@ -46,7 +46,7 @@ SimulationStudy <- function(method,str, n, p, K, r, sim, noise, meth=T, eigen=F)
     df_uni_low_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = ln*last_sv*diag(p))
     df_diff_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = diag(runif(n = p, min = 0, max = dn*last_sv)))
     #df_incr_noise <- df + rmvnorm(n=n, mean=rep(0, p), sigma=diag(last_sv*incn*c(1:p)/p))
-    return(list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise, "Increasing noise"=df_incr_noise))
+    return(list("High noise"=df_uni_high_noise, "Low noise"=df_uni_low_noise, "Differing noise"=df_diff_noise))#, "Increasing noise"=df_incr_noise))
   }
   
   for (i in 1:sim) {
@@ -167,7 +167,9 @@ noise <- c(0.02,0.001,0.005)
 
 # WrongPCA, WrongPCAImproved, MissingData, MatrixCompletion, KDEApproach
 set.seed(1312)
-chosen <- SimulationStudy(MatrixCompletion,"Matrix Completion", n, p, K, r, sim, noise, meth=T, eigen=F)
+chosen <- SimulationStudy(KDEApproach,"KDE Approach", n, p, K, r, sim, noise, meth=T, eigen=F)
+
+
 chosen[[1]]
 chosen[[2]]
 chosen[[3]]
