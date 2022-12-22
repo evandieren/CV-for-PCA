@@ -7,6 +7,8 @@ output: bookdown::html_document2
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(latex2exp)
+library(mvtnorm)
 ```
 
 **Todo**
@@ -211,43 +213,221 @@ We run our simulation with $n=100$ observations per data set and $p=8$ variables
 
 ## Comparison with respect to noise
 
-JUST 1 SIMULATION FOR IMPORTING, IMAGES DON'T REPRESENT $sim=20$
+For this analysis, we focus on $D_0$ and will vary the noise $\epsilon_i$ for $i \in [1,3]$. Hereafter are the errors for each CV method described in Section 2.
 
+```{r Noise0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
 
+plot_dataset_together_log <- function(method_str,dataset_number){
+
+load(paste0("datasets_plots/",method_str,".Rdata"))
+
+errors <- chosen[[4+dataset_number]]
+p <- dim(errors[[1]])[2]
+
+color_p <- c("orange", "darkblue","darkgray")
+# compute ylim
+ymin <- Inf
+ymax <- -Inf
+for (j in 1:3){
+  candid <- log(colMeans(errors[[j]]))
+  if (ymin > min(candid)){
+    if (ymin<0){
+      ymin <- min(candid)*1.05
+    }else{
+      ymin <- min(candid)*0.95
+    }
+  }
+  if (ymax < max(candid)){
+    ymax <- max(candid)*1.05 
+  }
+}
+
+plot(1:p, log(colMeans(errors[[1]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ with respect to noise"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+
+#par(mfrow=c(1,3))
+for (j in 2:3){
+  lines(1:p, log(colMeans(errors[[j]])), xlab="Rank r", ylab="Error in logscale",type="b",lwd = 2,col=color_p[j])
+}
+legend("topright", legend=c("Noise n°1", "Noise n°2","Noise n°3"),
+       col=color_p,lty = 1, cex=0.8)
+}
+
+plot_three <- function(method_str,dataset_number){
+  load(paste0("datasets_plots/",method_str,".Rdata"))
+  errors <- chosen[[4+dataset_number]]
+  p <- dim(errors[[1]])[2]
+  color_p <- c("orange", "darkblue","darkgray")
+  par(mfrow=c(1,3))
+  
+  for (j in 1:3){
+    plot(1:p, colMeans(errors[[j]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D^",j,"_",dataset_number,"$"), bold=T),type="b",lwd = 2,col=color_p[j])
+  }
+}
+
+par(mfrow=c(2,2))
+plot_dataset_together_log("Wrong PCA",0)
+plot_dataset_together_log("Wrong PCA Improved",0)
+plot_dataset_together_log("Missing Data",0)
+plot_dataset_together_log("Matrix Completion",0)
+```
+
+COMMENTS
+
+```{r NoiseMissing, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
+plot_three("KDE Approach",0)
+```
+
+COMMENTS
 
 ## Comparison with respect to initial covariance matrix 
-(rank and spectral shape)
+
+```{r Datasets, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on different dataset for Noise n°1 (low noise)"}
+
+plot_wrt_covariance <- function(method_str,noise){
+    
+  load(paste0("datasets_plots/",method_str,".Rdata"))
+  
+  errors <- list(chosen[[4]],chosen[[5]],chosen[[6]]) # D_0,D_1,D_2
+  p <- dim(errors[[1]][[1]])[2]
+  
+  color_p <- c("orange", "darkblue","darkgray")
+  # compute ylim
+  ymin <- 0
+  ymax <- -Inf
+  for (j in 1:3){
+    candid <- log(colMeans(errors[[j]][[noise]]))
+    if (ymin > min(candid)){
+      ymin <- min(candid)*1.05
+    }
+    if (ymax < max(candid)){
+      ymax <- max(candid)*1.05 
+    }
+  }
+  
+  plot(1:p, log(colMeans(errors[[1]][[noise]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error with Noise n°", noise," with respect to covariance"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+  for (j in 2:3){
+    lines(1:p, log(colMeans(errors[[j]][[noise]])), xlab="Rank r", ylab="Error",type="b",lwd = 2,col=color_p[j])
+  }
+  
+  legend("topright", legend=c(TeX("$D_0$"),TeX("$D_1$"),TeX("$D_2$")),
+         col=color_p,lty = 1, cex=0.8)
+  
+}
+
+par(mfrow=c(2,2))
+plot_wrt_covariance("Wrong PCA",1)
+plot_wrt_covariance("Wrong PCA Improved",1)
+plot_wrt_covariance("Missing Data",1)
+plot_wrt_covariance("Matrix Completion",1)
+
+```
+
+COMMENTS
 
 # Other PCs number selection methods
 
 ## Percentage of variance explained method
 
-The percentage of variance explained method is based on the dataset's covariance matrix, and its eigenvalues and the total variability (sum of diagonal entries of the covariance matrix). When computing the PCs for a given dataset $\mathbf{X} \in \mathbb{R}^{N \times p}$ of covariance $\Sigma$, we create an orthonormal basis with a corresponding diagonal covariance matrix $\Sigma_{PCA}$ with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_p \in \mathbb{R}$ will be a decreasing sequence. The method of percentage of variance explained is simply to select the first $r$ components such that $\frac{1}{V}\sum_{i=1}^r \lambda_i \ge \tau$ for an arbitrary threshold $\tau \in [0,1]$ and a total variability $V = \sum_{i=1}^p \lambda_i = tr(\Sigma_{PCA})$.
+The percentage of variance explained method is based on the dataset's covariance matrix, and its eigenvalues and the total variability (sum of diagonal entries of the covariance matrix). When computing the PCs for a given dataset $\mathbf{X} \in \mathbb{R}^{N \times p}$ of covariance $\Sigma$, we create an orthonormal basis with a corresponding diagonal covariance matrix $\Sigma_{PCA}$ with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_p \in \mathbb{R}$ of the new matrix will be a decreasing sequence. The method of percentage of variance explained is simply to select the first $r$ components such that $\frac{1}{V}\sum_{i=1}^r \lambda_i \ge \tau$ for an arbitrary threshold $\tau \in [0,1]$ and a total variability $V = \sum_{i=1}^p \lambda_i = tr(\Sigma_{PCA})$. Below are a few examples on the method on $D_0$:
 
--> INSERT PLOTS
+```{r percent, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=8,fig.height=4,fig.cap = "Eigenvalues of the PCA covariance matrix, with a treshold of 90% for $D_0$ with respect to noise"}
+  source("percent_var.R")
+  n <- 100
+  p <- 8
+  K <- 5
+  sim <- 5
+  r <- 3
+  noise <- c(0.02,0.001,0.005)
+  set.seed(1312)
+  df <- rmvnorm(n = n, mean = rep(0, p), sigma = diag(p))
+  df_svd <- svd(df)
+  df_svd$d[-(1:r)] <- 0
+  last_sv <- df_svd$d[r]
+  df <- df_svd$u %*% diag(df_svd$d) %*% t(df_svd$v)
+  D_0 <- list(df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[1]*last_sv*diag(p)),
+              df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[2]*last_sv*diag(p)),
+              rmvnorm(n = n, mean = rep(0, p), sigma = diag(runif(n = p, min = 0, max = noise[3]*last_sv))))
+  
+  par(mfrow=c(1,3))
+  for (i in 1:3){
+    D <- D_0[[i]]
+    pcaD<-prcomp(D)
+    Sig_pcaD <- cov(pcaD$x)
+    eig_pca <- eigen(Sig_pcaD)
+    print(eig_pca$values)
+    plot(1:p,eig_pca$values,main=TeX(paste0("Eigenvalues of the PCA covariance, $D_0^",i,"$")),type="b",ylab="Eigenvalue",
+         xlab="PCs")
+    legend("topright",y=c(paste0("Optimal value of r found : ",percent_var(Sig_pcaD))))
+  }  
+```
 
-## Scree-plot method (non-automatic)
+## Scree-plot method
 
-The Scree-plot is again related to the eigenvalues of the newly created orthonormal basis of PCs. As shown in the previous sub-section, the eigenvalues corresponding to the PCs are a decreasing sequence, so we get a graph as below when plotting the PCs index vs the singular value. We use singular value as it preserves the decaying characteristics and due to the asymmetric nature of our data set. The Scree-plot method consists of choosing the value of $r$ which corresponds to the elbow of the eigenvalue graph. With $100$ and $8$ variables we get an overview to which extent every single value contributes to the variance of the data set as a whole.
+The Scree-plot is again related to the eigenvalues of the newly created orthonormal basis of PCs. As shown in the above, the eigenvalues corresponding to the PCs are a decreasing sequence, as seen on the graph above. The Scree-plot method consists of choosing the value of $r$ which corresponds to the elbow of the eigenvalue graph. With $100$ and $8$ variables we get an overview to which extent every single value contributes to the variance of the data set as a whole.
 
-```{r scree0, echo=FALSE, fig.align = 'center', out.width = "90%", fig.cap = "Scree plot on our 0 basis data set with identity matrix as covariance with different noises as indicated by 1,2 and 3"}
-knitr::include_graphics("./Figures_SimStudy/Scree_plot_0.png")
+```{r scree0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=8,fig.height=4,fig.cap = "Scree plot on $D_0$ with different noises as indicated by 1,2 and 3"}
+  
+par(mfrow=c(1,3))
+  for (i in 1:3){
+    D <- D_0[[i]]
+    eigen_sig<-eigen(cov(D))
+    plot(1:p,eigen_sig$values,main=TeX(paste0("Eigenvalues of the $D_0^",i,"$ covariance")),type="b",ylab="Eigenvalue",
+         xlab="PCs")
+    }
 ```
 
 We can clearly see that the first three plots singular values are much bigger then the latter ones. In every plot the first three singular values only decrease slightly until the $4$th, where we can observe a strong drop. From the $4$th on the values decrease in the same manner as the first $3$. In this circumstances the [Scree-plot method (non-automatic)] would favor the $4$th value as this value initiates the elbow characteristic of the graphs in every single one of the graphs. This selection would unfortunately be the wrong one as by construction, e.g. truncation of our data set we were expecting the third singular value to initiate the "elbow" form.
 
-```{r scree1, echo=FALSE, fig.align = 'center', out.width = "90%", fig.cap = "Scree plot on our data set with random matrix as covariance with different noises as indicated by 1,2 and 3"}
-knitr::include_graphics("./Figures_SimStudy/Scree_plot_1.png")
+
+As seen below, the "Elbow-Plot" of our data set with a random matrix as covariance has a somehow similar shape. The first eigenvalue however explains much more on the overall variance of our data set. It drops strongly until the second, where the graph seems to stabilize. This behaviour holds on until the third singular value, whereafter we observe a similar drop and decreasing behaviour as in the previous plot. As we already concluded in Figure \@ref(fig:scree0), the [Scree-plot method (non-automatic)] would favor a wrong value.
+
+```{r scree1, echo=FALSE, fig.align = 'center', out.width = "90%", fig.width=12,fig.height=4, fig.cap = "Scree plot on $D_1$ with structured matrix as covariance with different noises as indicated by 1,2 and 3"}
+
+set.seed(1312)
+
+mat <- matrix(rnorm(p*p, mean = 0, sd = 1), nrow = p, ncol = p)
+df <- rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat))
+df_svd <- svd(df)
+df_svd$d[-(1:r)] <- 0
+last_sv <- df_svd$d[r]
+df <- df_svd$u %*% diag(df_svd$d) %*% t(df_svd$v)
+D_1 <- list(df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[1]*last_sv*diag(p)),
+            df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[2]*last_sv*diag(p)),
+            rmvnorm(n = n, mean = rep(0, p), sigma = diag(runif(n = p, min = 0, max = noise[3]*last_sv))))
+
+par(mfrow=c(1,3))
+  for (i in 1:3){
+    D <- D_1[[i]]
+    eigen_sig<-eigen(cov(D))
+    plot(1:p,eigen_sig$values,main=TeX(paste0("Eigenvalues of the $D_1^",i,"$ covariance")),type="b",ylab="Eigenvalue",
+         xlab="PCs")
+    }
 ```
 
-The "Elbow-Plot" of our data set with a random matrix as covariance has a somehow similar shape. The first singular value however explains much more on the overall variance of our data set. It drops strongly until the second, where the graph seems to stabilize. This behaviour holds on until the third singular value, whereafter we observe a similar drop and decreasing behaviour as in the previous plot. As we already concluded in Figure \@ref(fig:scree0), the [Scree-plot method (non-automatic)] would favor a wrong value.
+The scree plot of $D_2$, however looks more promising as we get a sharp drop after the first value for every kind of added noise. Therefore choosing the optimal rank $r$ according to the [Scree-plot method (non-automatic)] would coincide with the true rank of data set (which was by construction $2$ regardless of the amount of observations and variables) ++TRUE?!
 
-```{r scree2, echo=FALSE, fig.align = 'center', out.width = "90%", fig.cap = "Scree plot on our data set with structured matrix as covariance with different noises as indicated by 1,2 and 3"}
-knitr::include_graphics("./Figures_SimStudy/Scree_plot_2.png")
+```{r scree2, echo=FALSE, fig.align = 'center', out.width = "90%", fig.width=12,fig.height=4, fig.cap = "Scree plot on $D_2$ with structured matrix as covariance with different noises as indicated by 1,2 and 3"}
+
+set.seed(1312)
+
+mat <- matrix(1:p^2, nrow = p, ncol = p)/p
+df <-  rmvnorm(n = n, mean = rep(0, p), sigma = mat %*% t(mat))
+df_svd <- svd(df)
+df_svd$d[-(1:r)] <- 0
+last_sv <- df_svd$d[r]
+df <- df_svd$u %*% diag(df_svd$d) %*% t(df_svd$v)
+D_2 <- list(df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[1]*last_sv*diag(p)),
+            df + rmvnorm(n = n, mean = rep(0, p), sigma = noise[2]*last_sv*diag(p)),
+            rmvnorm(n = n, mean = rep(0, p), sigma = diag(runif(n = p, min = 0, max = noise[3]*last_sv))))
+
+par(mfrow=c(1,3))
+  for (i in 1:3){
+    D <- D_2[[i]]
+    eigen_sig<-eigen(cov(D))
+    plot(1:p,eigen_sig$values,main=TeX(paste0("Eigenvalues of the $D_2^",i,"$ covariance")),type="b",ylab="Eigenvalue",
+         xlab="PCs")
+    }
 ```
-
-The scree plot of our second data set, however looks more promising as we get a sharp drop after the first value for every kind of added noise. Therefore choosing the optimal rank $r$ according to the [Scree-plot method (non-automatic)] would coincide with the true rank of data set (which was by construction $2$ regardless of the amount of observations and variables) ++TRUE?!
-
 
 ## Comparison with CV methods
 Compared to CV methods described in [Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the dataset or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot).
