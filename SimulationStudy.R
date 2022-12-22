@@ -111,13 +111,23 @@ SimulationStudy <- function(method,str, n, p, K, r, sim, noise, meth=T, eigen=F)
 
   if (meth) {
     # Error of CV Methods
+    png(paste0("Figures_SimStudy/", str, "0.png"), width=900)#, res=res), pointsize=ps)
     par(mfrow=c(1,3))
     for (i in 1:3) {plot(1:p, colMeans(lsmethod0[[i]]), xlab="Rank r", ylab="Value", main=TeX(paste0("Error on $D^",i,"_0$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
     title(paste0("Error of ",str), line = - .9, outer = TRUE)
+    dev.off()
+    
+    png(paste0("Figures_SimStudy/", str, "1.png"), width=900)#, res=res), pointsize=ps)
+    par(mfrow=c(1,3))
     for (i in 1:3) {plot(1:p, colMeans(lsmethod1[[i]]), xlab="Rank r", ylab="Value", main=TeX(paste0("Error on $D^",i,"_1$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
     title(paste0("Error of ",str), line = - .9, outer = TRUE)
+    dev.off()
+    
+    png(paste0("Figures_SimStudy/", str, "2.png"), width=900)#, res=res), pointsize=ps)
+    par(mfrow=c(1,3))
     for (i in 1:3) {plot(1:p, colMeans(lsmethod2[[i]]), xlab="Rank r", ylab="Value", main=TeX(paste0("Error on $D^",i,"_2$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
     title(paste0("Error of ",str), line = - .9, outer = TRUE)
+    dev.off()
     
     c <- c()
     d <- c()
@@ -149,18 +159,19 @@ SimulationStudy <- function(method,str, n, p, K, r, sim, noise, meth=T, eigen=F)
 n <- 100
 p <- 8
 K <- 5
-sim <- 1
+sim <- 5
 r <- 3 # truncated dimension of data set
+# noise <- c(0.02,0.001,0.005) # noise used for scree plots
 noise <- c(0.02,0.001,0.005)
 
-set.seed(1312)
 
 # WrongPCA, WrongPCAImproved, MissingData, MatrixCompletion, KDEApproach
-chosen <- SimulationStudy(MissingData,"Missing Data", n, p, K, r, sim, noise, meth=F, eigen=T)
+set.seed(1312)
+chosen <- SimulationStudy(MatrixCompletion,"Matrix Completion", n, p, K, r, sim, noise, meth=T, eigen=F)
 chosen[[1]]
 chosen[[2]]
 chosen[[3]]
-matrix(unlist(chosen[[4]]), ncol=3)
+#matrix(unlist(chosen[[4]]), ncol=3)
 
 
 

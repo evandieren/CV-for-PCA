@@ -2,7 +2,7 @@
 title: "Cross-Validation for PCA"
 author: "Noah Scheider - Emanuele Sorgente - Eliott Van Dieren"
 date: "`r Sys.Date()`"
-output: html_document
+output: bookdown::html_document2
 ---
 
 ```{r setup, include=FALSE}
@@ -36,9 +36,9 @@ knitr::opts_chunk$set(echo = TRUE)
  
 
 
-## 1. Introduction
+# Introduction
 
-## 1.1 Problem description
+## Problem description
 
 When dealing with modern large datasets, the observations' dimensionality often becomes a problem regarding the interpretability of the dataset, or for its vizualisation, especially during the data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset (i.e. variance). An example of PCA usage is bringing a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and afterwards identifying clusters. It does so by computing Principal components from the dataset and then projecting datapoints to this new basis.
 
@@ -63,9 +63,9 @@ This project focuses on finding the optimal number of principal components ($r$)
 
 In this report, one will first find a presentation of each Cross-Validation method for PCA with an initial description, followed by a pseudo-code in [2. Cross-validation on PCA methods]. Then, those methods will be ran on simulated datasets with different parameters in [3. Simulation and comparison of CV methods]. Furthermore, the percentage of variance explained and the scree-plots methods will be described and tested in [4. Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well as next steps which could be conducted regarding this subject.
 
-## 2. Cross-validation on PCA methods
+# Cross-validation on PCA methods
 
-### 2.1 Naïve Approach
+## Naïve Approach
 
 A widely used approach for Cross-validation in PCA is a method that has the right intentions but fails at a critical point :it does not take into account any variance-bias tradeoff, meaning that the optimal solution will always be $r = R$. We start with the usual conventions by denoting $X \in \mathbb{R}^{n \times p}$ our data with $n$ observations and $p$ variables, then as presented in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), below is the pseudo-code of the Naïve approach:
 
@@ -78,7 +78,7 @@ A widely used approach for Cross-validation in PCA is a method that has the righ
 
 A numerical method to solve the least square problem in the top of the algorithm would be to compute the SVD decomposition of $\mathbf X[J_k^c,:]$ and truncate the rank to $r$ by setting the $p-r$ smallest singular values to zero. To estimate $\mathbf{x^{m}}, \forall m \in J_k$ with a lower dimensional version, we project it with the matrix $P_{\mathbf{\widehat{L}}}$ which can be computed via the the R built-in function `prcomp()` the returns among other objects a basis for the dimension of $\widehat{\mathbf L}$. The promised issue occurs when computing the error measure without further to-do. Thus the error obviously shrinks when $\widehat{\mathbf L}$ is allowed to have higher dimensions and converges to $0$ when its number of dimensions equals those of the initial data set $\mathbf{X}$, as the SVD will be a nearly exact representation of the matrix $\mathbf{X}$.
 
-### 2.2 Artificially turn the unsupervised problem into a supervised one
+## Artificially turn the unsupervised problem into a supervised one
 
 This method corrects the [2.1 Naïve Approach] by introducing a Bias-Variance trade-off for the $Err_k$ function. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Multivariate Gaussian dataset with $n$ observations and $p$ variables, mean $\mu$ and covariance $\Sigma$. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below :
 
@@ -96,7 +96,7 @@ It is important to emphasize some points of this aforementioned algorithm. When 
 Hence, we reduce the rank of the covariance of $\mathbf{X}$, but we preserve its dimension which allows us to estimate $\mathbf{x}^m_{miss}$ in the later part of the algorithm. When splitting the observations in every iteration of the for loop, it naturally comes to mind if we should always take the same or a different (random) split. The first possibility was chosen as that additional random factor would be negligible by the SLLN. Nevertheless, it makes sense to keep two equally sized parts in order to have a proper estimation basis without overestimating. This also gives us a good understanding whether our estimation method will work in harsh conditions, i.e. if half of the data is missing.
 When estimating $\hat{\mathbf{x}}^m_{miss}$, the linear estimator is used as it emerges from the law of our data set $\mathbf{X}$. Hence, it is only applicable in this form to Gaussian distributed observations $\mathbf{x} \in \mathbb{R}^p$. The estimation also makes use of the pseudoinverse of $\hat{\Sigma}_{obs,obs}$ denoted by $\hat{\Sigma}^\dagger_{obs}$. We use this convention in order to avoid singularity issues when inverting a block of the truncated covariance estimator. The pseudoinverse is easily callable in R by the function `ginv()` embedded in the `MASS` package.
 
-### 2.3 Missing data approach
+## Missing data approach
 
 Here it is assumed that the rows $\mathbf{X}_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $\mathbf{X}=(\mathbf{X}_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a multivariate Gaussian random variable of mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that rank$(\Sigma)=r$ for $r=1,…,R$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ based on observed data by the EM algorithm while the set of missed and observed data is randomly selected at the beginning of the algorithm. Then, it performs more or less the same steps as the previous algorithm to find the optimal number of PCs. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
 
@@ -127,7 +127,7 @@ Below is the pseudo-code for the Missing Data method :
   
   As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the dataset and can be seen as holes in the dataset, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the dataset, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ did the job.
 
-### 2.4 KDE modified approach
+## KDE modified approach
 This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian dataset of size $n \times p$ The goal is to minimize with respect to $R$ the following quantity :
 
 \[
@@ -153,7 +153,7 @@ Therefore, since the truncated covariance estimator is not linear we obtain an a
 
 Stepping into the for-loop we realize that it actually resembles a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_R$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $R$
 
-### 2.5 Matrix completion method
+## Matrix completion method
 
 This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $\mathbf{X} \in \mathbb{R}^{N\times p}$, but just that $X$ has a finite rank. Indeed, for a given data matrix $\mathbf{X}$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $\mathbf{X}$. The matrix completion method consists of finding a matrix $\mathbf M$ such that :
 
@@ -181,13 +181,13 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ with
   
   We decided multiply the initial $\|M^{(l)}-M^{(l-1)}\|_F$ stopping criteria by $\|M^{(l)}\|_F$ to take into account the magnitude of the elements in $M$, and added the condition $l<1000$ in case of the algorithm would not converge to the desired tolerance in a reasonable amount of time. In other words, the algorithm stops and returns the matrix $M^{(l)}$ if there was a change of less than $0.01\%$ from the previous matrix $M^{(l-1)}$, or if we go above $1000$ iterations.
     
-## 3. Simulation and comparison of CV methods
+# Simulation and comparison of CV methods
 
-### 3.1 Simulation dataset description
+## Simulation dataset description
 
 After the end of [2. Cross-validation on PCA methods] we will be equipped with multiple approaches which enable us to recover the best amount of dimensions needed to represent data "accurately" of a data set. Intuitively, every method must have its different advantages and draw backs.
 In order to get a better feeling on how our Cross-Validation methods behave in different circumstances, we will run a simulation study on a variety of synthesized data sets. This allows us to discover the limits of the different methods used and allow us to conclude and recommend different Algorithms with respect to its underlying data. 
-As by construction of our Alogrithms every single one of them besides the [2.1 Naïve Approach], the [2.5 Matrix completion method] is only applicable to Multivariate Gaussian distributed data. Therefore we restrict ourselves to this special distribution and create corresponding data in order to get meaningful results. All in all, we consider $12$ different data sets and compare the results of our five algorithms. Furthermore, we only consider centered Gaussian Multivariate Random variables and create three base data sets, on which we infer four kinds of different noises. The first data set is a standard Multivariate Gaussian data set while the second and third base data sets will rely on a random and structured covariance matrix. We denote our base data sets as $D^{i}_0, D^{i}_1$ and $D^{i}_2$ and $i \in \{1,\dots,4\}$. It consists of data $X=\{X^1,\dots,X^n\}$ and noise $\epsilon^{i}$.
+As by construction of our Alogrithms every single one of them besides the [2.1 Naïve Approach], the [2.5 Matrix completion method] is only applicable to Multivariate Gaussian distributed data. Therefore we restrict ourselves to this special distribution and create corresponding data in order to get meaningful results. All in all, we consider $12$ different data sets and compare the results of our five algorithms. Furthermore, we only consider centered Gaussian Multivariate Random variables and create three base data sets, on which we infer four kinds of different noises. The first data set is a standard Multivariate Gaussian data set while the second and third base data sets will rely on a random and structured covariance matrix. We denote our base data sets as $D^{i}_0, D^{i}_1$ and $D^{i}_2$ and $i \in \{1,\dots,3\}$. It consists of data $X=\{X^1,\dots,X^n\}$ and noise $\epsilon^{i}$. The amount of different parameters make it difficult to write get a single big picture of the problem, which is the reason we implemented a Shiny App that lets the reader tune the parameters as he pleases. We strongly recommend to check it out and test the limits of cross-validation for him oder herself. 
 
 \[
 D^{i}_0 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \mathbb{1}_{p\times p}), \forall j = 1,\dots,n\\
@@ -205,7 +205,7 @@ M =
   7 & 8 & 9 \\
 \end{pmatrix}
 \implies
-\Sigma_2 = \frac{1}{81}\begin{pmatrix}
+\Sigma_2 = \begin{pmatrix}
 0.81 & 0.96 & 1.11 \\
 0.96 & 1.15 & 1.33 \\
 1.11 & 1.33 & 1.56 \\
@@ -218,32 +218,53 @@ In order to have valid comparisons across all of our methods and validate their 
 \epsilon^{1}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma^2=1.5 \\
 \epsilon^{2}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma^2=0.2 \\
 \epsilon^{3}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0, U), U_{ii}\stackrel{\text{iid}}{\sim} \mathcal{U}([0,2]) \text{ and } U_{ij}=0, \text{for } i\neq j \\
-\epsilon^{4}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0, U), U_{ii}= \frac{2i}{p}\text{ and } U_{ij}=0, \text{for } i\neq j
 \]
 
-### 3.1 Comparison with respect to noise
+We run our simulation with $n=100$ observations per data set and $p=8$ variables. We truncate our data set to rank $r=3$ and repeat our cross-validation $sim=20$ times on the seed $1312$. The methods using classical cross-validation will loop over $K=5$ folds.
 
-### 3.2 Comparison with respect to initial covariance matrix 
+## Comparison with respect to noise
+
+JUST 1 SIMULATION FOR IMPORTING, IMAGES DON'T REPRESENT $sim=20$
+
+
+
+## Comparison with respect to initial covariance matrix 
 (rank and spectral shape)
 
-## 4. Other PCs number selection methods
+# Other PCs number selection methods
 
-### 4.1 Percentage of variance explained method
+## Percentage of variance explained method
 
 The percentage of variance explained method is based on the dataset's covariance matrix, and its eigenvalues and the total variability (sum of diagonal entries of the covariance matrix). When computing the PCs for a given dataset $\mathbf{X} \in \mathbb{R}^{N \times p}$ of covariance $\Sigma$, we create an orthonormal basis with a corresponding diagonal covariance matrix $\Sigma_{PCA}$ with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_p \in \mathbb{R}$ will be a decreasing sequence. The method of percentage of variance explained is simply to select the first $r$ components such that $\frac{1}{V}\sum_{i=1}^r \lambda_i \ge \tau$ for an arbitrary threshold $\tau \in [0,1]$ and a total variability $V = \sum_{i=1}^p \lambda_i = tr(\Sigma_{PCA})$.
 
 -> INSERT PLOTS
 
-### 4.2 Scree-plot method (non-automatic)
+## Scree-plot method (non-automatic)
 
-The Scree-plot is again related to the eigenvalues of the newly created orthonormal basis of PCs. As shown in the previous sub-section, the eigenvalues corresponding to the PCs are a decreasing sequence, so we get a graph as below when plotting the PCs index vs the eigenvalue. The Scree-plot method consists of choosing the value of $r$ which corresponds to the elbow of the eigenvalue graph.
+The Scree-plot is again related to the eigenvalues of the newly created orthonormal basis of PCs. As shown in the previous sub-section, the eigenvalues corresponding to the PCs are a decreasing sequence, so we get a graph as below when plotting the PCs index vs the singular value. We use singular value as it preserves the decaying characteristics and due to the asymmetric nature of our data set. The Scree-plot method consists of choosing the value of $r$ which corresponds to the elbow of the eigenvalue graph. With $100$ and $8$ variables we get an overview to which extent every single value contributes to the variance of the data set as a whole.
 
--> INSERT PLOTS
+```{r scree0, echo=FALSE, fig.align = 'center', out.width = "90%", fig.cap = "Scree plot on our 0 basis data set with identity matrix as covariance with different noises as indicated by 1,2 and 3"}
+knitr::include_graphics("./Figures_SimStudy/Scree_plot_0.png")
+```
+
+We can clearly see that the first three plots singular values are much bigger then the latter ones. In every plot the first three singular values only decrease slightly until the $4$th, where we can observe a strong drop. From the $4$th on the values decrease in the same manner as the first $3$. In this circumstances the [Scree-plot method (non-automatic)] would favor the $4$th value as this value initiates the elbow characteristic of the graphs in every single one of the graphs. This selection would unfortunately be the wrong one as by construction, e.g. truncation of our data set we were expecting the third singular value to initiate the "elbow" form.
+
+```{r scree1, echo=FALSE, fig.align = 'center', out.width = "90%", fig.cap = "Scree plot on our data set with random matrix as covariance with different noises as indicated by 1,2 and 3"}
+knitr::include_graphics("./Figures_SimStudy/Scree_plot_1.png")
+```
+
+The "Elbow-Plot" of our data set with a random matrix as covariance has a somehow similar shape. The first singular value however explains much more on the overall variance of our data set. It drops strongly until the second, where the graph seems to stabilize. This behaviour holds on until the third singular value, whereafter we observe a similar drop and decreasing behaviour as in the previous plot. As we already concluded in Figure \@ref(fig:scree0), the [Scree-plot method (non-automatic)] would favor a wrong value.
+
+```{r scree2, echo=FALSE, fig.align = 'center', out.width = "90%", fig.cap = "Scree plot on our data set with structured matrix as covariance with different noises as indicated by 1,2 and 3"}
+knitr::include_graphics("./Figures_SimStudy/Scree_plot_2.png")
+```
+
+The scree plot of our second data set, however looks more promising as we get a sharp drop after the first value for every kind of added noise. Therefore choosing the optimal rank $r$ according to the [Scree-plot method (non-automatic)] would coincide with the true rank of data set (which was by construction $2$ regardless of the amount of observations and variables) ++TRUE?!
 
 
-### 4.3 Comparison with CV methods
-Compared to CV methods described in [2. Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the dataset or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot).
+## Comparison with CV methods
+Compared to CV methods described in [Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the dataset or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot).
 
-## 5. Conclusion
+# Conclusion
 
 In conclusion, several methods for choosing the optimal number of components has been presented. We could observe the behavior of those CV methods depending on the noise and the structure of covariance matrices thanks to simulation on various datasets. We concluded that some methods are more robust to noise (EXAMPLE) while other tend to give poor results when confronted to noise (EXAMPLE). Moreover, we had to assume that our dataset was a centered multivariate Gaussian for every method to be comparable, however, some methods generalize better to other type of dataset's distribution (Matrix Completion for example) while others are more restrictive (EXAMPLE). Computationwise, some methods are more efficient than others (EXAMPLE) and, assuming that all conditions are met to use those methods, the most efficient ones are therefore favoured when working for bigger datasets.
