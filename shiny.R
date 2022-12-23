@@ -19,10 +19,10 @@ ui <- fluidPage(
     sidebarPanel(
       sliderInput("n",
                   "Observations",
-                  min = 20,
-                  max = 100,
-                  value = 50,
-                  step = 5),
+                  min = 50,
+                  max = 500,
+                  value = 100,
+                  step = 10),
       sliderInput("p",
                   "Variables",
                   min = 3,
@@ -38,21 +38,21 @@ ui <- fluidPage(
       sliderInput("K",
                   "CV Folds",
                   min = 5,
-                  max = 15,
+                  max = 10,
                   value = 5,
                   step = 5),
       sliderInput("sim",
                   "Simulation runs",
-                  min = 3,
+                  min = 1,
                   max = 20,
-                  value = 10,
+                  value = 5,
                   step = 1),
-      sliderInput("noise",
-                  "Noise",
-                  min = 0.001,
-                  max = 0.1,
-                  value = 0.01,
-                  step = 0.001),
+      # sliderInput("noise",
+      #             "Noise",
+      #             min = 0.001,
+      #             max = 0.1,
+      #             value = 0.01,
+      #             step = 0.001),
 
     ),
     
@@ -72,20 +72,21 @@ server <- function(input, output) {
     K <- as.numeric(input$k)
     r <- as.numeric(input$r)
     sim <- as.numeric(input$sim)
-    noise <- as.numeric(input$noise)
+    # noise <- as.numeric(input$noise)
+    noise <- c(0.02,0.001,0.005)
     chosen <- SimulationStudy(WrongPCAImproved, "Wrong PCA Improved", n, p, K, r, sim, noise, meth=T, eigen=F)
-
+    
+    plot(1:2, 1:2)
     #par(mfrow=c(3,3))
     #for (i in 1:3) {plot(1:p, colMeans(chosen[[4]][[i]]), xlab="Rank r", ylab="Error", type = "b", pch = 19, lty = 1, col = 1)}
     #for (i in 1:3) {plot(1:p, colMeans(chosen[[5]][[i]]), xlab="Rank r", ylab="Error", type = "b", pch = 19, lty = 1, col = 1)}
     #for (i in 1:3) {plot(1:p, colMeans(chosen[[6]][[i]]), xlab="Rank r", ylab="Error", type = "b", pch = 19, lty = 1, col = 1)}
-    plot(1:2, 1:2)
 
   })#,height = 600, width = 600 )
 }
 
 # Run the application 
-debug(shinyApp)
+undebug(SimulationStudy)
 shinyApp(ui = ui, server = server)
 
 
