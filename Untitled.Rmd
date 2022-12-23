@@ -1,0 +1,93 @@
+---
+title: "r analysis - avoid conflict"
+author: "Eliott Van Dieren"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(latex2exp)
+library(mvtnorm)
+library(RColorBrewer)
+```
+
+
+
+
+```{r Noise0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=12,fig.cap = "Comparison of CV methods on base 0 dataset with different initial rank truncation"}
+
+plot_wrt_r <- function(method_str,dataset_number,noise,log,p){
+
+color_p <- brewer.pal(p,"Set1")
+
+  if (log == T){
+    ymin <- Inf
+    ymax <- -Inf
+    for (r in 1:p){
+      load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+      errors <- chosen[[4+dataset_number]]
+      candid <- log(colMeans(errors[[noise]]))
+      if (ymin > min(candid)){
+        if (ymin<0){
+          ymin <- min(candid)*1.05
+        }else{
+          ymin <- min(candid)*0.95
+        }
+      }
+      if (ymax < max(candid)){
+        ymax <- max(candid)*1.05 
+      }
+    }
+    
+    load(paste0("datasets_plots/r_analysis/",method_str,"_1.Rdata"))
+    errors <- chosen[[4+dataset_number]]
+    plot(1:p, log(colMeans(errors[[noise]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t initial r"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+    
+    for (r in 2:p){
+      load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+      errors <- chosen[[4+dataset_number]]
+      lines(1:p, log(colMeans(errors[[noise]])), xlab="Rank r", ylab="Error in logscale",type="b",lwd = 2,col=color_p[r])
+    }
+
+}else{
+  ymin <- Inf
+  ymax <- -Inf
+  for (r in 1:p){
+    load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+    errors <- chosen[[4+dataset_number]]
+    candid <- colMeans(errors[[noise]])
+    if (ymin > min(candid)){
+      if (ymin<0){
+        ymin <- min(candid)*1.05
+      }else{
+        ymin <- min(candid)*0.95
+      }
+    }
+    if (ymax < max(candid)){
+      ymax <- max(candid)*1.05 
+    }
+  }
+  
+  load(paste0("datasets_plots/r_analysis/",method_str,"_1.Rdata"))
+  errors <- chosen[[4+dataset_number]]
+  plot(1:p, colMeans(errors[[noise]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t initial r"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+    
+  for (r in 2:p){
+    load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+    errors <- chosen[[4+dataset_number]]
+    lines(1:p, colMeans(errors[[noise]]), xlab="Rank r", ylab="Error",type="b",lwd = 2,col=color_p[r])
+  }
+}
+legend("topright", legend=c("r = 1", "r = 2","r = 3","r = 4","r = 5","r = 6","r = 7","r = 8"),
+       col=color_p,lty = 1, cex=0.7)
+}
+
+par(mfrow=c(2,2))
+#plot_wrt_r("Wrong PCA",0,1,T,8)
+plot_wrt_r("Wrong PCA Improved",0,2,T,8)
+plot_wrt_r("Missing Data",0,2,T,8)
+plot_wrt_r("Matrix Completion",0,2,T,8)
+plot_wrt_r("KDE Approach",0,2,F,8)
+
+```
