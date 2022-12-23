@@ -1,9 +1,10 @@
 library(mvtnorm)
-source("WrongPCA.R")
-source("WrongPCAImproved.R")
-source("Missing_data.R")
-source("KDEApproach.R")
-source("MatrixCompletion.R")
+library(ggplot2)
+source("Methods/WrongPCA.R")
+source("Methods/WrongPCAImproved.R")
+source("Methods/Missing_data.R")
+source("Methods/KDEApproach.R")
+source("Methods/MatrixCompletion.R")
 
 dataset <- function(df,r,noi){
   df_svd <- svd(df)
@@ -14,7 +15,6 @@ dataset <- function(df,r,noi){
   df_uni_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = noi*last_sv*diag(p))
   return(list("Noise"=df_uni_noise))
 }
-
 SimulationStudy <- function(method, n, p, K, r, sim, noi){
   # method: CV method choosen
   # r: rank of truncated data set
@@ -49,6 +49,10 @@ SimulationStudy <- function(method, n, p, K, r, sim, noi){
   
   par(mfrow=c(1,2))
   # Scree plots
+  #plot1 =ggplot(mapping=aes(x=1:p, y=colMeans(lsEigen0[[1]])))+
+   # geom_point()+
+    #xlab("kth Eigenvalue")+
+    #ylab("Value")
   plot1 = plot(1:p, colMeans(lsEigen0[[1]]), xlab="kth Eigenvalue", ylab="Value", main="Scree plot data set ", type = "b", pch = 19, lty = 1, col = 1)
   
   # Error of CV Methods
@@ -77,5 +81,4 @@ set.seed(1312)
 chosen <- SimulationStudy(WrongPCAImproved, n, p, K, r, sim, noi )
 
 chosen[1]
-
 
