@@ -26,9 +26,9 @@ library(RColorBrewer)
 
 ## Problem description
 
-When dealing with modern large datasets, the observations' dimensionality often becomes a problem regarding the interpretability of the dataset, or for its vizualisation, especially during the data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the dataset, while trying to keep as much information as possible from the original dataset (i.e. variance). An example of PCA usage is bringing a high-dimension dataset to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and afterwards identifying clusters. It does so by computing Principal components from the dataset and then projecting datapoints to this new basis.
+When dealing with modern large data sets, the observations' dimensionality often becomes a problem regarding the interpretability of the data set, or for its vizualisation, especially during the data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the data set, while trying to keep as much information as possible from the original data set (i.e. variance). An example of PCA usage is bringing a high-dimension data set to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and afterwards identifying clusters. It does so by computing Principal components from the data set and then projecting datapoints to this new basis.
 
-Mathematically speaking, we can define principal components as an orthonormal basis of unit vectors which sequentially capture the most variance in the data. Practically, the PCs can be found with the following optimization problems for a given centered Gaussian dataset $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
+Mathematically speaking, we can define principal components as an orthonormal basis of unit vectors which sequentially capture the most variance in the data. Practically, the PCs can be found with the following optimization problems for a given centered Gaussian data set $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
 \[
 \begin{split}
 v_1 &= \underset{v, \| v \|=1}{\mathrm{arg\,max}} \mbox{ } v^\top \widehat{\boldsymbol{\Sigma}} v \\
@@ -37,17 +37,17 @@ v_2 &= \underset{v, \| v \|=1, v^\top v_1 = 0}{\mathrm{arg\,max}} v^\top \wideha
 \end{split}
 \]
 
-with $\widehat{\Sigma} = N^{-1}\sum_{n=1}^N \mathbf x_n \mathbf x_n^\top \in \mathbb{R}^{p\times p}$ being the empirical covariance matrix of the dataset. More information about Principal component analysis can be found in [Jolliffe, 2002](https://link.springer.com/book/10.1007/b98835) or directly on [Wikipedia](https://en.wikipedia.org/wiki/Principal_component_analysis).
+with $\widehat{\Sigma} = N^{-1}\sum_{n=1}^N \mathbf x_n \mathbf x_n^\top \in \mathbb{R}^{p\times p}$ being the empirical covariance matrix of the data set. More information about Principal component analysis can be found in [Jolliffe, 2002](https://link.springer.com/book/10.1007/b98835) or directly on [Wikipedia](https://en.wikipedia.org/wiki/Principal_component_analysis).
 
 
-```{r, echo=FALSE, fig.align = 'center', out.width = "25%", fig.cap = "Example of 2 PCs on a given dataset in $R^2$"}
+```{r, echo=FALSE, fig.align = 'center', out.width = "25%", fig.cap = "Example of 2 PCs on a given data set in $R^2$"}
 knitr::include_graphics("./Figures/PCA_p_2_example.png")
 ```
 
 
-This project focuses on finding the optimal number of principal components ($r$), which dictates a trade-off between the model's complexity and its interpretability. In fact, higher the $r$, higher the explained variance, but less interpretable the dataset. To optimally choose the number of PCs, several techniques have been created, such as the method of percentage of variance explained, the scree-plot method or Cross-validation for PCA.
+This project focuses on finding the optimal number of principal components ($r$), which dictates a trade-off between the model's complexity and its interpretability. In fact, higher the $r$, higher the explained variance, but less interpretable the data set. To optimally choose the number of PCs, several techniques have been created, such as the method of percentage of variance explained, the scree-plot method or Cross-validation for PCA.
 
-In this report, one will first find a presentation of each Cross-Validation method for PCA with an initial description, followed by a pseudo-code in [2. Cross-validation on PCA methods]. Then, those methods will be ran on simulated datasets with different parameters in [3. Simulation and comparison of CV methods]. Furthermore, the percentage of variance explained and the scree-plots methods will be described and tested in [4. Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well as next steps which could be conducted regarding this subject.
+In this report, one will first find a presentation of each Cross-Validation method for PCA with an initial description, followed by a pseudo-code in [2. Cross-validation on PCA methods]. Then, those methods will be ran on simulated data sets with different parameters in [3. Simulation and comparison of CV methods]. Furthermore, the percentage of variance explained and the scree-plots methods will be described and tested in [4. Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well as next steps which could be conducted regarding this subject.
 
 # Cross-validation on PCA methods
 
@@ -66,7 +66,7 @@ A numerical method to solve the least square problem in the top of the algorithm
 
 ## Artificially turn the unsupervised problem into a supervised one
 
-This method corrects the [2.1 Naïve Approach] by introducing a Bias-Variance trade-off for the $Err_k$ function. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Multivariate Gaussian dataset with $n$ observations and $p$ variables, mean $\mu$ and covariance $\Sigma$. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below :
+This method corrects the [2.1 Naïve Approach] by introducing a Bias-Variance trade-off for the $Err_k$ function. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Multivariate Gaussian data set with $n$ observations and $p$ variables, mean $\mu$ and covariance $\Sigma$. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below :
 
   * split data into $K$ folds $J_1,\ldots,J_K$ (row indices)
   * **for** $k=1,\ldots,K$:
@@ -86,9 +86,9 @@ When estimating $\hat{\mathbf{x}}^m_{miss}$, the linear estimator is used as it 
 
 Here it is assumed that the rows $\mathbf{X}_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $\mathbf{X}=(\mathbf{X}_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a multivariate Gaussian random variable of mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that rank$(\Sigma)=r$ for $r=1,…,R$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ based on observed data by the EM algorithm while the set of missed and observed data is randomly selected at the beginning of the algorithm. Then, it performs more or less the same steps as the previous algorithm to find the optimal number of PCs. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
 
-Let $\tilde{X}$ be the dataset containing missing values randomly placed on the original $N \times p$ dataset. The EM algorithm works as follows :
+Let $\tilde{X}$ be the data set containing missing values randomly placed on the original $N \times p$ data set. The EM algorithm works as follows :
 
-  * Initialize $\hat{\mu} = \frac{1}{N}\sum_{n=1}^N(\tilde{X}^{obs}_{n})$ and $\hat{\Sigma} = I_{p\times p}$, where $\tilde{X}_{obs}$ is the dataset restricted to observed values.
+  * Initialize $\hat{\mu} = \frac{1}{N}\sum_{n=1}^N(\tilde{X}^{obs}_{n})$ and $\hat{\Sigma} = I_{p\times p}$, where $\tilde{X}_{obs}$ is the data set restricted to observed values.
   * Set $\hat{\Sigma}^{old} = C\hat{\Sigma}$, and $tol = 0.01$ for a given constant $C$ big enough to enter the while loop (e.g. $C = 600$)
   * **while** $(||\hat{\Sigma}-\hat{\Sigma}^{old}||_F > tol||\hat{\Sigma}^{old}||_F)$ where $||.||_F$ is the Frobenius norm
     - Set $\hat{\Sigma}^{old} = \hat{\Sigma}$
@@ -101,17 +101,17 @@ This method slightly differs from the one presented in [Notes 05 - T. Masak](htt
 
 Below is the pseudo-code for the Missing Data method :
 
-  * split the dataset in $K$ folds $J_1,\ldots,J_K$ (row indices)
+  * split the data set in $K$ folds $J_1,\ldots,J_K$ (row indices)
   * Compute the bivariate set of missed data $\Omega$
   * **for** $k=1,\ldots,K$:
-    - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the dataset $X$ and missing indices $\Omega$
+    - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the data set $X$ and missing indices $\Omega$
     - Truncate $\hat{\Sigma}$ to a rank $r$ matrix $\hat{\Sigma}_r$ by eigenvalue decomposition.
     - Reuse the missed data $\Omega$ to split the data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart
     - Estimate the missing part from the observed part with a linear estimator using the $\hat{\mu}$ and $\hat{\Sigma}_r$ as previously described in the last CV method.
   * **end for**   
   * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k} \|\hat{\mathbf{X}}^m_{miss}-\mathbf{X}^m_{miss}\|^2_2$
   
-  As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the dataset and can be seen as holes in the dataset, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the dataset, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ function call did the job.
+  As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the data set and can be seen as holes in the data set, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the data set, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ function call did the job.
 
 
 ## Matrix completion method
@@ -144,7 +144,7 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ w.r.
   
 
 ## KDE modified approach
-This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian dataset of size $N \times p$ The goal is to minimize w.r.t $R$ the following quantity :
+This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian data set of size $N \times p$ The goal is to minimize w.r.t $R$ the following quantity :
 
 \[
 \mathbb{E} \| \widehat{C}_R - C \|_F^2 = \mathbb{E}\| \widehat{C}_R \|_F - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_F^2
@@ -172,7 +172,7 @@ Stepping into the for-loop we realize that it is pretty similar to a Leave-One-O
     
 # Simulation and comparison of CV methods
 
-## Simulation dataset description
+## Simulation data set description
 
 As described in[Cross-validation on PCA methods], one is now equipped with multiple approaches to recover the best amount of dimensions needed to represent data "accurately" of a data set. Intuitively, every method must have its different advantages and drawbacks.
 To get a better feeling on how the Cross-Validation methods behave in different circumstances, one can run a simulation study on a variety of synthesized data sets. This allows us to discover the limits of the different methods used and to conclude and recommend different Algorithms with respect to its underlying data. 
@@ -209,13 +209,13 @@ In order to have valid comparisons across all of our methods and validate their 
 \epsilon^{3}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0, U), U_{ii}\stackrel{\text{iid}}{\sim} \mathcal{U}([0,0.005*Val_{SVD}^r]) \text{ and } U_{ij}=0, \text{for } i\neq j \\
 \]
 
-We run our simulation with $n=100$ observations per data set and $p=8$ variables. We truncate our data set to rank $r=3$ and repeat our cross-validation $sim=5$ times on the seed $1312$. The methods using classical cross-validation will loop over $K=5$ folds. In order to take into consideration the magnitude of our dataset, we chose to multiply the noise's variance by the $r-th$ singular value of $\mathbf{X}$.
+We run our simulation with $n=100$ observations per data set and $p=8$ variables. We truncate our data set to rank $r=3$ and repeat our cross-validation $sim=5$ times on the seed $1312$. The methods using classical cross-validation will loop over $K=5$ folds. In order to take into consideration the magnitude of our data set, we chose to multiply the noise's variance by the $r-th$ singular value of $\mathbf{X}$.
 
 ## Comparison with respect to noise
 
 For this analysis, we focus on $D_0 \in \mathbb{R}^{N \times p}$ and will vary the noise $\epsilon^i_p$ for $i \in [1,3]$. Hereafter are the errors for each CV method described in Section 2.
 
-```{r Noise0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
+```{r Noise0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 0 data set with different noises as indicated by Noise°1,2 and 3"}
 
 plot_dataset_together <- function(method_str,dataset_number,log){
 
@@ -242,7 +242,7 @@ if (log == T){
     }
   }
   
-  plot(1:p, log(colMeans(errors[[1]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t noise"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+  plot(1:p, log(colMeans(errors[[1]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t noise"), bold=T),type="b",cex.main=1, cex.lab=1.4,cex.axis=1.3,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
   
   #par(mfrow=c(1,3))
   for (j in 2:3){
@@ -268,7 +268,7 @@ if (log == T){
         }
     }
   }
-  plot(1:p, colMeans(errors[[1]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t noise"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+  plot(1:p, colMeans(errors[[1]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t noise"), bold=T),type="b", cex.main=1.2, cex.lab=1.7, cex.axis=1.6, lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
   for (j in 2:3){
     lines(1:p, colMeans(errors[[j]]), xlab="Rank r", ylab="Error",type="b",lwd = 2,col=color_p[j])
   }
@@ -283,10 +283,10 @@ plot_three <- function(method_str,dataset_number){
   errors <- chosen[[4+dataset_number]]
   p <- dim(errors[[1]])[2]
   color_p <- c("orange", "darkblue","darkgray")
-  par(mfrow=c(1,3))
+  par(mfrow=c(1,3), "mar"=c(5, 6, 4, 4))
   
   for (j in 1:3){
-    plot(1:p, colMeans(errors[[j]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D^",j,"_",dataset_number,"$"), bold=T),type="b",lwd = 2,col=color_p[j])
+    plot(1:p, colMeans(errors[[j]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D^",j,"_",dataset_number,"$"), bold=T),type="b",lwd = 2,col=color_p[j], cex.main=1.2, cex.lab=1.7, cex.axis=1.6)
   }
 }
 
@@ -305,11 +305,11 @@ The [Missing data approach] differs in its overall behavior from the previous to
 
 The error measure of the [Matrix completion method] seems to be a mix of the error of the Wrong PCA Improved and the Missing Data approach. We observe a slight increase in the first two variables, followed by a strong error drop on variable $3$ before it starts to increase again. The increase after variable $3$ is clearly stronger than at the beginning.
 
-As for the [KDE Modified Approach], it will be analysed at the end of this section due to similar behaviors with respect to different datasets.
+As for the [KDE Modified Approach], it will be analysed at the end of this section due to similar behaviors with respect to different data sets.
 
-After this initial analysis, one would like to examine how the CV methods generalize to other datasets, i.e. moving from the identity matrix as covariance to a random matrix. Hereafter are the results for $D_1$, being the dataset with a random covariance matrix, as defined in the [Simulation dataset description]
+After this initial analysis, one would like to examine how the CV methods generalize to other data sets, i.e. moving from the identity matrix as covariance to a random matrix. Hereafter are the results for $D_1$, being the data set with a random covariance matrix, as defined in the [Simulation data set description]
 
-```{r Noise1, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 1 dataset with different noises as indicated by Noise°1,2 and 3"}
+```{r Noise1, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 1 data set with different noises as indicated by Noise°1,2 and 3"}
 par(mfrow=c(2,2))
 plot_dataset_together("Wrong PCA",1,T)
 plot_dataset_together("Wrong PCA Improved",1,T)
@@ -323,7 +323,7 @@ We now examine to which extent our algorithms change if we consider a structured
 
 The [Naïve Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards especially for Noise n°3. Again we see how the total noise added accounts for the different stabilization error. Interestingly, the Missing Data Approach  and the Matrix Completion Method aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the uniform noises but ends being less accurate. 
 
-```{r Noise2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 2 dataset with different noises as indicated by Noise°1,2 and 3"}
+```{r Noise2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 2 data set with different noises as indicated by Noise°1,2 and 3"}
 par(mfrow=c(2,2))
 plot_dataset_together("Wrong PCA",2,T)
 plot_dataset_together("Wrong PCA Improved",2,T)
@@ -336,14 +336,14 @@ Interestingly, the Missing Data Approach  and the Matrix Completion Method don't
 
 
 
-```{r NoiseKDE, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Modified Approach for the 3 datasets with different noises as indicated by Noise°1,2 and 3"}
-par(mfrow=c(1,3))
+```{r NoiseKDE, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Modified Approach for the 3 data sets with different noises as indicated by Noise°1,2 and 3"}
+par(mfrow=c(1,3), "mar"=c(5, 6, 4, 4))
 plot_dataset_together("KDE Approach",0,F)
 plot_dataset_together("KDE Approach",1,F)
 plot_dataset_together("KDE Approach",2,F)
 ```
 
-```{r NoiseMissing2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
+```{r NoiseMissing2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 0 data set with different noises as indicated by Noise°1,2 and 3"}
 plot_three("KDE Approach",2)
 ```
 
@@ -355,7 +355,7 @@ For the [KDE Modified Approach], we observe in general that for every variable u
 
 We now fix the error to be the third one and analyze how our different CV methods behave on the different kinds of base data sets, e.g. $D_0^3, D_1^3$ and $D_2^3$. We only consider the third kind of noise as we consider it to be a mix between the uniform high and low noise $\epsilon^1, \epsilon^2$ and the plots only differ negligibly but stay consistent in their fundamental shape for the non-mentioned noise. We also want to mention that the following plots are the same plots as before, only rearranged in order to have a better representation on how our CV Methods behave with respect to the different base data sets.
 
-```{r Datasets, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on different dataset for Noise n°3 (differing noise)"}
+```{r Datasets, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on different data set for Noise n°3 (differing noise)"}
 
 plot_wrt_covariance <- function(method_str,noise){
     
@@ -478,10 +478,10 @@ legend("topright", legend=c("r = 1", "r = 2","r = 3","r = 4","r = 5","r = 6","r 
 
 ```
 
-In this last section about simulations, the focus will be on the initial truncating rank of the dataset $\mathbf{X}$. As described earlier, we run the CV methods on a dataset which we artificially truncate via SVD to assess the correctness of the output of each method. Please note that the [Wrong PCA] method has been omitted as its behavior is known (will always converge to $r = 8$). The graphs below plot the errors of each method on $D_0^2$, being the 0 basis dataset with low noise, while each line represents the initial truncated rank $r \in [0,8]$. 
+In this last section about simulations, the focus will be on the initial truncating rank of the data set $\mathbf{X}$. As described earlier, we run the CV methods on a data set which we artificially truncate via SVD to assess the correctness of the output of each method. Please note that the [Wrong PCA] method has been omitted as its behavior is known (will always converge to $r = 8$). The graphs below plot the errors of each method on $D_0^2$, being the 0 basis data set with low noise, while each line represents the initial truncated rank $r \in [0,8]$. 
 
 
-```{r Rdata0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=12,fig.cap = "Comparison of CV methods on base 0 dataset (Noise n°2) and different initial rank truncation"}
+```{r Rdata0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=12,fig.cap = "Comparison of CV methods on base 0 data set (Noise n°2) and different initial rank truncation"}
 
 par(mfrow=c(2,2))
 plot_wrt_r("Wrong PCA Improved",0,2,T,8)
@@ -491,7 +491,7 @@ plot_wrt_r("KDE Approach",0,2,F,8)
 
 ```
 
-The [Wrong PCA Improved] method generalizes well for different values of initial rank, as we can observe the dive at the right rank of $\mathbf{X}$. As for the [Missing Data approach], we observe that for $r > 3$, the method does not give good results anymore. One could think that it is due to $D_0^2$ being of rank $3$ and therefore doing the SVD truncation would not change anything to the initial dataset, but after careful verification, the rank of $D_0$ with low noise is of rank $8$, meaning that this explanation is not plausible, and that the algorithm therefore performs poorly. However, one reason which was already highlighted in the previous sections is the poor behaviour of the $\hat{\Sigma}$ from the EM algorithm implementation. For the Matrix completion approach, we observe good results for every rank $r$, until $r=6$ where the distinction becomes somewhat blurrier. Lastly, the [KDE Approach] gives us exact results for each rank.
+The [Wrong PCA Improved] method generalizes well for different values of initial rank, as we can observe the dive at the right rank of $\mathbf{X}$. As for the [Missing Data approach], we observe that for $r > 3$, the method does not give good results anymore. One could think that it is due to $D_0^2$ being of rank $3$ and therefore doing the SVD truncation would not change anything to the initial data set, but after careful verification, the rank of $D_0$ with low noise is of rank $8$, meaning that this explanation is not plausible, and that the algorithm therefore performs poorly. However, one reason which was already highlighted in the previous sections is the poor behaviour of the $\hat{\Sigma}$ from the EM algorithm implementation. For the Matrix completion approach, we observe good results for every rank $r$, until $r=6$ where the distinction becomes somewhat blurrier. Lastly, the [KDE Approach] gives us exact results for each rank.
 
 As for $D_1$ with a low noise, the same conclusions from $D_0$ can be drawn, and will therefore not be included in the report. As $D_2$ is of rank $2$, studying the truncation of the rank will not give interesting results either.
 
@@ -500,7 +500,7 @@ As for $D_1$ with a low noise, the same conclusions from $D_0$ can be drawn, and
 
 ## Percentage of variance explained method
 
-The percentage of variance explained method is based on the dataset's covariance matrix, and its eigenvalues and the total variability (sum of diagonal entries of the covariance matrix). When computing the PCs for a given dataset $\mathbf{X} \in \mathbb{R}^{N \times p}$ of covariance $\Sigma$, we create an orthonormal basis with a corresponding diagonal covariance matrix $\Sigma_{PCA}$ with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_p \in \mathbb{R}$ of the new matrix will be a decreasing sequence. The method of percentage of variance explained is simply to select the first $r$ components such that $\frac{1}{V}\sum_{i=1}^r \lambda_i \ge \tau$ for an arbitrary threshold $\tau \in [0,1]$ and a total variability $V = \sum_{i=1}^p \lambda_i = tr(\Sigma_{PCA})$. Below are a few examples on the method on $D_0$:
+The percentage of variance explained method is based on the data set's covariance matrix, and its eigenvalues and the total variability (sum of diagonal entries of the covariance matrix). When computing the PCs for a given data set $\mathbf{X} \in \mathbb{R}^{N \times p}$ of covariance $\Sigma$, we create an orthonormal basis with a corresponding diagonal covariance matrix $\Sigma_{PCA}$ with its entries being the eigenvalues of corresponding PCs. As we sequentially construct the components, the eigenvalues $\lambda_1, \lambda_2, ... ,\lambda_p \in \mathbb{R}$ of the new matrix will be a decreasing sequence. The method of percentage of variance explained is simply to select the first $r$ components such that $\frac{1}{V}\sum_{i=1}^r \lambda_i \ge \tau$ for an arbitrary threshold $\tau \in [0,1]$ and a total variability $V = \sum_{i=1}^p \lambda_i = tr(\Sigma_{PCA})$. Below are a few examples on the method on $D_0$:
 
 ```{r percent, echo=FALSE,out.width="90%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "Eigenvalues of the PCA covariance matrix, with a treshold of 90% for $D_0$ w.r.t noise"}
   source("Methods/percent_var.R")
@@ -607,8 +607,10 @@ par(mfrow=c(1,3))
 ```
 
 ## Comparison with CV methods
-Compared to CV methods described in [Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the dataset or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot). 
+Compared to CV methods described in [Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the data set or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot). 
 
 # Conclusion
 
-In conclusion, several methods for choosing the optimal number of components has been presented. We could observe the behavior of those CV methods depending on the noise and the structure of covariance matrices thanks to simulation on various datasets. We concluded that some methods are more robust to noise (EXAMPLE) while other tend to give poor results when confronted to noise (EXAMPLE). Moreover, we had to assume that our dataset was a centered multivariate Gaussian for every method to be comparable, however, some methods generalize better to other type of dataset's distribution (Matrix Completion for example) while others are more restrictive (EXAMPLE). Computationwise, some methods are more efficient than others (EXAMPLE) and, assuming that all conditions are met to use those methods, the most efficient ones are therefore favoured when working for bigger datasets.
+In conclusion, several methods for choosing the optimal number of components have been presented. We were able to observe the behavior of those CV methods depending on the noise, the structure of covariance matrices and the truncated dimensions thanks to simulations on various data sets. We concluded that most methods are able to give accurate predictions in very specific and especially unnoisy circumstances. We have seen that the amount of noise is crucial for a method in order to get useless, e.g. in Matrix Completion in \@ref(fig:Noise0) or Matrix Completion in \@ref(fig:Noise1). Not only the added noise but also the underlying covariance matrix impacts the quality of the ouput of the CV-Methods as we were able to see in Figure \@ref(fig:Noise2). Moreover, we had to assume that our data set was a centered multivariate Gaussian for every method to be comparable, however, some methods generalize better to other type of data set's distribution (Matrix Completion for example) while others are at least the way we made use of them restricted to this special distribution [Wrong PCA Improved] or [Missing data approach]. While comparing these function and having set a "low" amount of observations, variables and simulations we hadn't that much of a struggle concerning computation time. Nevertheless we want to mention, that the last three methods we presented, hence the [Wrong PCA Improved], the [Matrix completion method] and the [KDE modified approach] are not very "efficient" algorithms.
+
+To get a better feeling on how the different parameters choosen in the simulations play together we want to encourage the reader to try out our [Shiny.app](https://github.com/evandieren/FinalProj-352934/blob/8a479eedfb9a2807e44dcf4856330a575c612750/shiny.R)
