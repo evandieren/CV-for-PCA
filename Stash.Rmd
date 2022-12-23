@@ -62,3 +62,19 @@ plot_dataset_together("KDE Approach",2,F)
 
 
 For the [KDE Modified Approach], we observe in general that for every variable until the third one it drops very strongly. Having reached rank $3$ the quality of its estimation seem to stay the same and correspondingly the error. In case of the second data set we observe the same behaviour but instead of stabilizing after rank $3$ it does that after reaching variable $2$ by construction of our data set.
+
+
+
+
+
+## Comparison across different covariance matrices 
+
+We now fix the error to be the third one and analyze how our different CV methods behave on the different kinds of base data sets, e.g. $D_0^3, D_1^3$ and $D_2^3$. We only consider the third kind of noise as we consider it to be a mix between the uniform high and low noise $\epsilon^1, \epsilon^2$ and the plots only differ negligibly but stay consistent in their fundamental shape for the non-mentioned noise. We also want to mention that the following plots are the same plots as before, only rearranged in order to have a better representation on how our CV Methods behave with respect to the different base data sets.
+
+Unsurprisingly, the shape of the [Naïve Approach] doesn't change at all. However, we are able to observe that the error level is slightly different until variable $3$ but then really sticks together.
+
+The [Artificially turn the unsupervised problem into a supervised one] again decreases until the true value of the data set and then stabilized. The error is the lowest for the data set with a structured data set, then for the one with an Identity Matrix as covariance and the worst being the one with a random covariance matrix.
+
+The [Missing data approach] gives us a similar shape for $D_0$ and $D_1$ but a fundamentally different one for $D_2$. Whereas the error again decreases until rank $3$ for $D_0$ and $D_1$, it doesn't seem to be the case for $D_2$. This approach doesn't find the true rank for $D_2$ and keeps increasing continuously from the beginning until the last three variables. For $D_0$ and $D_1$ we notice the same sharp increase in error size when exceeding the true rank of the data set.
+
+For the [Matrix completion method] we get similar characteristics for $D_0$ and $D_1$, whereas the method fails at $D_2$. Evaluating it on $D_0$ and $D_1$ we observe a slight increase in the fist two variables but then a noticeable error decrease when allowing the method to truncate to the true rank of data data set. Looking carefully at the plot we see that the method actually overshoots the true rank for $D_1$ as it get the best estimations at the fourth variable. Exceeding the third and fourth variable respectively, the error reincreases but stabilizes beneath the initial error size of variable $1$ and $2$. For $D_2$ we monitor a convex, square root like function favoring dimension $1$ to be the true rank of the data set even though we would have expected it to be $2$. $D_1$ and $D_2$ seem to be a source of trouble as they don't allow us to conclude the true rank based on the error development within the variables.
