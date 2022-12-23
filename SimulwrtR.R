@@ -166,6 +166,17 @@ p <- 8
 K <- 5
 sim <- 5
 noise <- c(0.02,0.001,0.005)
+
+df <- rmvnorm(n = n, mean = rep(0, p), sigma = diag(p))
+
+svd_df <- svd(df)
+
+last <- svd_df$d[8]
+
+df_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = 0.001*last*diag(p))
+
+qr(df_noise)$rank
+
 name <- "Matrix Completion"
 
 # Uncomment to simulate :-)
