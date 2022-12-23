@@ -116,31 +116,6 @@ Below is the pseudo-code for the Missing Data method :
   
   As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the dataset and can be seen as holes in the dataset, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the dataset, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ function call did the job.
 
-## KDE modified approach
-This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian dataset of size $N \times p$ The goal is to minimize w.r.t $R$ the following quantity :
-
-\[
-\mathbb{E} \| \widehat{C}_R - C \|_F^2 = \mathbb{E}\| \widehat{C}_R \|_F - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_F^2
-\]
-
-with $\widehat{C}_R$ being the truncated covariance estimator of rank $R$, $C$ being the covariance matrix and $\|.\|_F$ being the Frobenius norm while $\langle X, Y \rangle$ represents the sum of all elements from the Hadamard product of the two matrices $X,Y$, or in mathematical terms : $\langle X, Y \rangle := \sum_{i,j}X_{i,j}Y_{i,j}$.
-Assuming that the mean of $\mathbf{X}$ is zero, we get:
-\[
-\mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_R^{(-n)}}_{\approx \mathbb{E} \widehat{C}_R}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_R , X_n X_n^\top \rangle
-\]
-
-Therefore, since the truncated covariance estimator is not linear we obtain an approximation, which we will plug back into the initial quantity we wish to minimize. By differentiating the quantity w.r.t $R$, we obtain the desired ranking as it will be the only value depending on $R$. Overall, we implement this method as follows for every rank $R$:
-
-* Estimate Covariance $\widehat{C}$ from given data $X$
-* Decompose $\widehat{C}$ and set $p-R$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $R$ ($\widehat{C}_R$)
-* Set $Err_R = \|\widehat{C}_R\|_F$
-* **for** $j$ in $1,\dots,N$:
-  - Compute $\widehat{C}_R^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $X$ then truncate it to rank $R$.
-  - Subtract $\frac{2}{N}\langle\widehat{C}_R,\widehat{C}_R^{(-j)}\rangle$ from $Err_R$
-* **end**
-* Choose $R^* = \underset{R}{\mathrm{arg\,min}} \quad Err_R$ according to the minimal error $Err_R$
-
-Stepping into the for-loop we realize that it is pretty similar to a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_R$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $R$.
 
 ## Matrix completion method
 
@@ -169,6 +144,34 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ w.r.
   * Store the error $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment for each value of $R$ from $1$ to $p$, then pick the $R$ which gives the lowest error.
   
   We decided multiply the initial $\|M^{(l)}-M^{(l-1)}\|_F$ stopping criteria by $\|M^{(l)}\|_F$ to take into account the magnitude of the elements in $M$, and added the condition $l<1000$ in case of the algorithm would not converge to the desired tolerance in a reasonable amount of time. In other words, the algorithm stops and returns the matrix $M^{(l)}$ if there was a change of less than $0.01\%$ from the previous matrix $M^{(l-1)}$, or if we go above $1000$ iterations.
+  
+
+## KDE modified approach
+This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian dataset of size $N \times p$ The goal is to minimize w.r.t $R$ the following quantity :
+
+\[
+\mathbb{E} \| \widehat{C}_R - C \|_F^2 = \mathbb{E}\| \widehat{C}_R \|_F - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_F^2
+\]
+
+with $\widehat{C}_R$ being the truncated covariance estimator of rank $R$, $C$ being the covariance matrix and $\|.\|_F$ being the Frobenius norm while $\langle X, Y \rangle$ represents the sum of all elements from the Hadamard product of the two matrices $X,Y$, or in mathematical terms : $\langle X, Y \rangle := \sum_{i,j}X_{i,j}Y_{i,j}$.
+Assuming that the mean of $\mathbf{X}$ is zero, we get:
+\[
+\mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_R^{(-n)}}_{\approx \mathbb{E} \widehat{C}_R}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_R , X_n X_n^\top \rangle
+\]
+
+Therefore, since the truncated covariance estimator is not linear we obtain an approximation, which we will plug back into the initial quantity we wish to minimize. By differentiating the quantity w.r.t $R$, we obtain the desired ranking as it will be the only value depending on $R$. Overall, we implement this method as follows for every rank $R$:
+
+* Estimate Covariance $\widehat{C}$ from given data $X$
+* Decompose $\widehat{C}$ and set $p-R$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $R$ ($\widehat{C}_R$)
+* Set $Err_R = \|\widehat{C}_R\|_F$
+* **for** $j$ in $1,\dots,N$:
+  - Compute $\widehat{C}_R^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $X$ then truncate it to rank $R$.
+  - Subtract $\frac{2}{N}\langle\widehat{C}_R,\widehat{C}_R^{(-j)}\rangle$ from $Err_R$
+* **end**
+* Choose $R^* = \underset{R}{\mathrm{arg\,min}} \quad Err_R$ according to the minimal error $Err_R$
+
+Stepping into the for-loop we realize that it is pretty similar to a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_R$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $R$.
+
     
 # Simulation and comparison of CV methods
 
@@ -317,13 +320,11 @@ plot_dataset_together("Missing Data",1,T)
 plot_dataset_together("Matrix Completion",1,T)
 ```
 
-<<<<<<< HEAD
 The [Naive Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards. Again we see how the total noise added accounts for the different stabilization errors. For the Missing Data Approach error we observe a strong similarity to the previous analysis. Its error starts to decrease until variable $3$ and then spikes up to stabilize. The only noticable difference is, that the total amount of noise added plays now a stronger criterion on where the curve converges. With the uniform low noise converging with the lowest error. In the Matrix Completion method we now observe that the algorithms doesn't screw up its prediction with high uniform noise, but does this time for differing noise. For high noise the method favors $3$ variables, where as it chooses $2$ variables for differing noise. For a uniform low noise it seems to work well by, having a sharp decrease in error rank $3$ and then increasing again.
 
 We now examine to which extent our algorithms change if we consider a structured covariance $\Sigma_2$, with increasing impact on the last variables.
-=======
-The [Naïve Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards especially for Noise n°3. Again we see how the total noise added accounts for the different stabilization error. Interestingly, the Missing Data Approach  and the Matrix Completion Method aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the  and starts beneath 
->>>>>>> 42feed500abe249bc11b9e390e35b03af0f321e8
+
+The [Naïve Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards especially for Noise n°3. Again we see how the total noise added accounts for the different stabilization error. Interestingly, the Missing Data Approach  and the Matrix Completion Method aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the uniform noises but ends being less accurate. 
 
 ```{r Noise2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 2 dataset with different noises as indicated by Noise°1,2 and 3"}
 par(mfrow=c(2,2))
@@ -333,7 +334,6 @@ plot_dataset_together("Missing Data",2,T)
 plot_dataset_together("Matrix Completion",2,T)
 ```
 
-<<<<<<< HEAD
 The Wrong PCA has behaves again the same regardless of the noise added. The first observation also applies for the Wrong PCA improved. The only subtlety we want to emphasize on, is that it seems once again to be sensitive with the total amount of noise added. A stronger decrease in the first two variables for the uniform and differing noise is observable.
 Interestingly, the Missing Data Approach  and the Matrix Completion Method don't seem to handle the kind of structure very well. In fact the algorithms aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the other two error curves but then exceed them after rank $5$. The adhesivity is somewhat stronger for the error  Matrix completion error as the error curve is almost identical regardless of the noise added.
 
@@ -355,9 +355,11 @@ plot_dataset_together("KDE Approach",2,F)
 For the [KDE Modified Approach], we observe in general that for every variable until the third one it drops very strongly. Having reached rank $3$ the quality of its estimation seem to stay the same and correspondingly the error. In case of the second data set we observe the same behaviour but instead of stabilizing after rank $3$ it does that after reaching variable $2$ by construction of our data set.
 
 
-## Comparison with respect to initial covariance matrix 
+## Comparison across different covariance matrices 
 
-```{r Datasets, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on different dataset for Noise n°1 (high noise)"}
+We now fix the error to be the third one and analyze how our different CV methods behave on the different kinds of base data sets, e.g. $D_0^3, D_1^3$ and $D_2^3$. We only consider the third kind of noise as we consider it to be a mix between the uniform high and low noise $\epsilon^1, \epsilon^2$ and the plots only differ negligibly but stay consistent in their fundamental shape for the non-mentioned noise. We also want to mention that the following plots are the same plots as before, only rearranged in order to have a better representation on how our CV Methods behave with respect to the different base data sets.
+
+```{r Datasets, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on different dataset for Noise n°3 (differing noise)"}
 
 plot_wrt_covariance <- function(method_str,noise){
     
@@ -391,30 +393,6 @@ plot_wrt_covariance <- function(method_str,noise){
 }
 
 par(mfrow=c(2,2))
-plot_wrt_covariance("Wrong PCA",1)
-plot_wrt_covariance("Wrong PCA Improved",1)
-plot_wrt_covariance("Missing Data",1)
-plot_wrt_covariance("Matrix Completion",1)
-
-```
-
-COMMENTS
-
-```{r Dataset2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on different dataset for Noise n°2 (low noise)"}
-
-par(mfrow=c(2,2))
-plot_wrt_covariance("Wrong PCA",2)
-plot_wrt_covariance("Wrong PCA Improved",2)
-plot_wrt_covariance("Missing Data",2)
-plot_wrt_covariance("Matrix Completion",2)
-
-```
-
-COMMENTS
-
-```{r Dataset3, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on different dataset for Noise n°3 (differing noise)"}
-
-par(mfrow=c(2,2))
 plot_wrt_covariance("Wrong PCA",3)
 plot_wrt_covariance("Wrong PCA Improved",3)
 plot_wrt_covariance("Missing Data",3)
@@ -422,6 +400,13 @@ plot_wrt_covariance("Matrix Completion",3)
 
 ```
 
+Unsurprisingly, the shape of the [Naïve Approach] doesn't change at all. However, we are able to observe that the error level is slightly different until variable $3$ but then really sticks together.
+
+The [Artificially turn the unsupervised problem into a supervised one] again decreases until the true value of the data set and then stabilized. The error is the lowest for the data set with a structured data set, then for the one with an Identity Matrix as covariance and the worst being the one with a random covariance matrix.
+
+The [Missing data approach] gives us a similar shape for $D_0$ and $D_1$ but a fundamentally different one for $D_2$. Whereas the error again decreases until rank $3$ for $D_0$ and $D_1$, it doesn't seem to be the case for $D_2$. This approach doesn't find the true rank for $D_2$ and keeps increasing continuously from the beginning until the last three variables. For $D_0$ and $D_1$ we notice the same sharp increase in error size when exceeding the true rank of the data set.
+
+For the [Matrix completion method] we get similar characteristics for $D_0$ and $D_1$, whereas the method fails at $D_2$. Evaluating it on $D_0$ and $D_1$ we observe a slight increase in the fist two variables but then a noticeable error decrease when allowing the method to truncate to the true rank of data data set. Looking carefully at the plot we see that the method actually overshoots the true rank for $D_1$ as it get the best estimations at the fourth variable. Exceeding the third and fourth variable respectively, the error reincreases but stabilizes beneath the initial error size of variable $1$ and $2$. For $D_2$ we monitor a convex, square root like function favoring dimension $1$ to be the true rank of the data set even though we would have expected it to be $2$. $D_1$ and $D_2$ seem to be a source of trouble as they don't allow us to conclude the true rank based on the error development within the variables.
 
 
 
