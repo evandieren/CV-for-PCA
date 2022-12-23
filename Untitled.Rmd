@@ -15,7 +15,7 @@ library(RColorBrewer)
 
 
 
-```{r Noise0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=12,fig.cap = "Comparison of CV methods on base 0 dataset with different initial rank truncation"}
+```{r, echo=FALSE}
 
 plot_wrt_r <- function(method_str,dataset_number,noise,log,p){
 
@@ -79,15 +79,26 @@ color_p <- brewer.pal(p,"Set1")
     lines(1:p, colMeans(errors[[noise]]), xlab="Rank r", ylab="Error",type="b",lwd = 2,col=color_p[r])
   }
 }
+
 legend("topright", legend=c("r = 1", "r = 2","r = 3","r = 4","r = 5","r = 6","r = 7","r = 8"),
        col=color_p,lty = 1, cex=0.7)
 }
 
+```
+
+In this last section about simulations, the focus will be on the initial truncating rank of the dataset $\mathbf{X}$. As described earlier, we run the CV methods on a dataset which we artificially truncate via SVD to assess the correctness of the output of each method. Please note that the [Wrong PCA] method has been omitted as its behavior is known (will always converge to $r = 8$). The graphs below plot the errors of each method on $D_0^2$, being the 0 basis dataset with low noise, while each line represents the initial truncated rank $r \in [0,8]$. 
+
+
+```{r Rdata0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=12,fig.cap = "Comparison of CV methods on base 0 dataset (Noise n°2) and different initial rank truncation"}
+
 par(mfrow=c(2,2))
-#plot_wrt_r("Wrong PCA",0,1,T,8)
 plot_wrt_r("Wrong PCA Improved",0,2,T,8)
 plot_wrt_r("Missing Data",0,2,T,8)
 plot_wrt_r("Matrix Completion",0,2,T,8)
 plot_wrt_r("KDE Approach",0,2,F,8)
 
 ```
+
+The [Wrong PCA Improved] method generalizes well for different values of initial rank, as we can observe the dive at the right rank of $\mathbf{X}$. As for the [Missing Data approach], we observe that for $r > 3$, the method does not give good results anymore. One could think that it is due to $D_0^2$ being of rank $3$ and therefore doing the SVD truncation would not change anything to the initial dataset, but after careful verification, the rank of $D_0$ with low noise is of rank $8$, meaning that this explanation is not plausible, and that the algorithm therefore performs poorly. However, one reason which was already highlighted in the previous sections is the poor behaviour of the $\hat{\Sigma}$ from the EM algorithm implementation. For the Matrix completion approach, we observe good results for every rank $r$, until $r=6$ where the distinction becomes somewhat blurrier. Lastly, the [KDE Approach] gives us exact results for each rank.
+
+As for $D_1$ with a low noise, the same conclusions from $D_0$ can be drawn, and will therefore not be included in the report. As $D_2$ is of rank $2$, studying the truncation of the rank will not give interesting results either.

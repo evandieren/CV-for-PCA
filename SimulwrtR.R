@@ -162,6 +162,7 @@ SimulationStudy <- function(method, str, n, p, K, r, sim, noise, meth=T, eigen=F
 }
 
 
+<<<<<<< HEAD:SimulationStudy.R
 n <- 100
 p <- 8
 K <- 5
@@ -188,4 +189,51 @@ par(mfrow=c(3,3))
 for (i in 1:3) {plot(1:p, colMeans(chosen[[4]][[i]]), xlab="Rank r", ylab="Error", main=TeX(paste0(name," on $D^",i,"_0$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
 for (i in 1:3) {plot(1:p, colMeans(chosen[[5]][[i]]), xlab="Rank r", ylab="Error", main=TeX(paste0(name," on $D^",i,"_1$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
 for (i in 1:3) {plot(1:p, colMeans(chosen[[6]][[i]]), xlab="Rank r", ylab="Error", main=TeX(paste0(name," on $D^",i,"_2$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
+=======
+<<<<<<< HEAD:SimulwrtR.R
+n <- 100
+p <- 8
+K <- 5
+sim <- 5
+noise <- c(0.02,0.001,0.005)
+
+df <- rmvnorm(n = n, mean = rep(0, p), sigma = diag(p))
+
+svd_df <- svd(df)
+
+last <- svd_df$d[8]
+
+df_noise <- df + rmvnorm(n = n, mean = rep(0, p), sigma = 0.001*last*diag(p))
+
+qr(df_noise)$rank
+
+name <- "Matrix Completion"
+=======
+# n <- 100
+# p <- 8
+# K <- 5
+# r <- 3
+# sim <- 5
+# noise <- c(0.02,0.001,0.005)
+# name <- "Matrix Completion"
+# 
+# # Uncomment to simulate :-)
+# # WrongPCA, WrongPCAImproved, MissingData, MatrixCompletion, KDEApproach
+# #for (r in 1:p){
+# #  set.seed(1312)
+# #  chosen <- SimulationStudy(MatrixCompletion,name, n, p, K, r, sim, noise, meth=T, eigen=F)
+# #  save(chosen,file=paste0("./datasets_plots/r_analysis/",name,"_",r,".Rdata"))
+# #}
+# 
+# set.seed(1312)
+# # chosen <- SimulationStudy(MatrixCompletion,name, n, p, K, r, sim, noise, meth=T, eigen=F)
+# 
+# name <- "Wrong PCA Improved"
+# chosen <- SimulationStudy(WrongPCAImproved, name, n, p, K, r, sim, noise, meth=T, eigen=F)
+# par(mfrow=c(3,3))
+# for (i in 1:3) {plot(1:p, colMeans(chosen[[4]][[i]]), xlab="Rank r", ylab="Error", main=TeX(paste0(name," on $D^",i,"_0$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
+# for (i in 1:3) {plot(1:p, colMeans(chosen[[5]][[i]]), xlab="Rank r", ylab="Error", main=TeX(paste0(name," on $D^",i,"_1$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
+# for (i in 1:3) {plot(1:p, colMeans(chosen[[6]][[i]]), xlab="Rank r", ylab="Error", main=TeX(paste0(name," on $D^",i,"_2$"), bold=T), type = "b", pch = 19, lty = 1, col = 1)}
+>>>>>>> 89d41cba3eea93419d652955cda58e206ab7474f:SimulationStudy.R
+>>>>>>> 8a479eedfb9a2807e44dcf4856330a575c612750:SimulwrtR.R
 

@@ -9,15 +9,12 @@ output: bookdown::html_document2
 knitr::opts_chunk$set(echo = TRUE)
 library(latex2exp)
 library(mvtnorm)
+library(RColorBrewer)
 ```
 
 **Todo**
 
-* Run simulation study on synthesized data (- Emphasize on noise, correlation, hyperparameter r, comparing with elbow plots, use the same generated data for the different methods) - document along the way
-
 * Report:
-
-  * Extend [1.3 Simulation dataset description] <span style="color:gray">Eliott</span>
   * Overall conclusion
 
   
@@ -408,7 +405,96 @@ The [Missing data approach] gives us a similar shape for $D_0$ and $D_1$ but a f
 
 For the [Matrix completion method] we get similar characteristics for $D_0$ and $D_1$, whereas the method fails at $D_2$. Evaluating it on $D_0$ and $D_1$ we observe a slight increase in the fist two variables but then a noticeable error decrease when allowing the method to truncate to the true rank of data data set. Looking carefully at the plot we see that the method actually overshoots the true rank for $D_1$ as it get the best estimations at the fourth variable. Exceeding the third and fourth variable respectively, the error reincreases but stabilizes beneath the initial error size of variable $1$ and $2$. For $D_2$ we monitor a convex, square root like function favoring dimension $1$ to be the true rank of the data set even though we would have expected it to be $2$. $D_1$ and $D_2$ seem to be a source of trouble as they don't allow us to conclude the true rank based on the error development within the variables.
 
+## Comparison with respect to initial rank truncation
 
+
+```{r, echo=FALSE}
+
+plot_wrt_r <- function(method_str,dataset_number,noise,log,p){
+
+color_p <- brewer.pal(p,"Set1")
+
+  if (log == T){
+    ymin <- Inf
+    ymax <- -Inf
+    for (r in 1:p){
+      load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+      errors <- chosen[[4+dataset_number]]
+      candid <- log(colMeans(errors[[noise]]))
+      if (ymin > min(candid)){
+        if (ymin<0){
+          ymin <- min(candid)*1.05
+        }else{
+          ymin <- min(candid)*0.95
+        }
+      }
+      if (ymax < max(candid)){
+        ymax <- max(candid)*1.05 
+      }
+    }
+    
+    load(paste0("datasets_plots/r_analysis/",method_str,"_1.Rdata"))
+    errors <- chosen[[4+dataset_number]]
+    plot(1:p, log(colMeans(errors[[noise]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t initial r"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+    
+    for (r in 2:p){
+      load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+      errors <- chosen[[4+dataset_number]]
+      lines(1:p, log(colMeans(errors[[noise]])), xlab="Rank r", ylab="Error in logscale",type="b",lwd = 2,col=color_p[r])
+    }
+
+}else{
+  ymin <- Inf
+  ymax <- -Inf
+  for (r in 1:p){
+    load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+    errors <- chosen[[4+dataset_number]]
+    candid <- colMeans(errors[[noise]])
+    if (ymin > min(candid)){
+      if (ymin<0){
+        ymin <- min(candid)*1.05
+      }else{
+        ymin <- min(candid)*0.95
+      }
+    }
+    if (ymax < max(candid)){
+      ymax <- max(candid)*1.05 
+    }
+  }
+  
+  load(paste0("datasets_plots/r_analysis/",method_str,"_1.Rdata"))
+  errors <- chosen[[4+dataset_number]]
+  plot(1:p, colMeans(errors[[noise]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t initial r"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+    
+  for (r in 2:p){
+    load(paste0("datasets_plots/r_analysis/",method_str,"_",r,".Rdata"))
+    errors <- chosen[[4+dataset_number]]
+    lines(1:p, colMeans(errors[[noise]]), xlab="Rank r", ylab="Error",type="b",lwd = 2,col=color_p[r])
+  }
+}
+
+legend("topright", legend=c("r = 1", "r = 2","r = 3","r = 4","r = 5","r = 6","r = 7","r = 8"),
+       col=color_p,lty = 1, cex=0.7)
+}
+
+```
+
+In this last section about simulations, the focus will be on the initial truncating rank of the dataset $\mathbf{X}$. As described earlier, we run the CV methods on a dataset which we artificially truncate via SVD to assess the correctness of the output of each method. Please note that the [Wrong PCA] method has been omitted as its behavior is known (will always converge to $r = 8$). The graphs below plot the errors of each method on $D_0^2$, being the 0 basis dataset with low noise, while each line represents the initial truncated rank $r \in [0,8]$. 
+
+
+```{r Rdata0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=12,fig.cap = "Comparison of CV methods on base 0 dataset (Noise n°2) and different initial rank truncation"}
+
+par(mfrow=c(2,2))
+plot_wrt_r("Wrong PCA Improved",0,2,T,8)
+plot_wrt_r("Missing Data",0,2,T,8)
+plot_wrt_r("Matrix Completion",0,2,T,8)
+plot_wrt_r("KDE Approach",0,2,F,8)
+
+```
+
+The [Wrong PCA Improved] method generalizes well for different values of initial rank, as we can observe the dive at the right rank of $\mathbf{X}$. As for the [Missing Data approach], we observe that for $r > 3$, the method does not give good results anymore. One could think that it is due to $D_0^2$ being of rank $3$ and therefore doing the SVD truncation would not change anything to the initial dataset, but after careful verification, the rank of $D_0$ with low noise is of rank $8$, meaning that this explanation is not plausible, and that the algorithm therefore performs poorly. However, one reason which was already highlighted in the previous sections is the poor behaviour of the $\hat{\Sigma}$ from the EM algorithm implementation. For the Matrix completion approach, we observe good results for every rank $r$, until $r=6$ where the distinction becomes somewhat blurrier. Lastly, the [KDE Approach] gives us exact results for each rank.
+
+As for $D_1$ with a low noise, the same conclusions from $D_0$ can be drawn, and will therefore not be included in the report. As $D_2$ is of rank $2$, studying the truncation of the rank will not give interesting results either.
 
 
 # Other PCs number selection methods
@@ -522,7 +608,7 @@ par(mfrow=c(1,3))
 ```
 
 ## Comparison with CV methods
-Compared to CV methods described in [Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the dataset or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot).
+Compared to CV methods described in [Cross-validation on PCA methods], those methods are relatively easy to implement, efficient as there is only a eigenvalue decomposition of the covariance matrix which is computationnally expensive and pretty interpretable. However, those methods are not well generalizable if there is some missing values in the dataset or if the eigenvalues do not follow a clear elbow pattern (for the scree-plot). 
 
 # Conclusion
 
