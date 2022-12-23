@@ -337,15 +337,18 @@ plot_dataset_together("Matrix Completion",2,T)
 The Wrong PCA has behaves again the same regardless of the noise added. The first observation also applies for the Wrong PCA improved. The only subtlety we want to emphasize on, is that it seems once again to be sensitive with the total amount of noise added. A stronger decrease in the first two variables for the uniform and differing noise is observable.
 Interestingly, the Missing Data Approach  and the Matrix Completion Method don't seem to handle the kind of structure very well. In fact the algorithms aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the other two error curves but then exceed them after rank $5$. The adhesivity is somewhat stronger for the error  Matrix completion error as the error curve is almost identical regardless of the noise added.
 
+
+
 ```{r NoiseMissing0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
-plot_three("KDE Approach",0)
-=======
+plot_three("KDE Approach",2)
+```
+
+
 ```{r NoiseKDE, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Modified Approach for the 3 datasets with different noises as indicated by Noise°1,2 and 3"}
 par(mfrow=c(1,3))
 plot_dataset_together("KDE Approach",0,F)
 plot_dataset_together("KDE Approach",1,F)
 plot_dataset_together("KDE Approach",2,F)
->>>>>>> 42feed500abe249bc11b9e390e35b03af0f321e8
 ```
 
 
