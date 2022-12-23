@@ -56,7 +56,7 @@ In this report, one will first find a presentation of each Cross-Validation meth
 
 ## Naïve Approach
 
-A widely used approach for Cross-validation in PCA is a method that has the right intentions but fails at a critical point :it does not take into account any variance-bias tradeoff, meaning that the optimal solution will always be $r = R$. We start with the usual conventions by denoting $X \in \mathbb{R}^{n \times p}$ our data with $n$ observations and $p$ variables, then as presented in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), below is the pseudo-code of the Naïve approach:
+A widely used approach for Cross-validation in PCA is a method that has the right intentions but fails at a critical point: it does not take into account any variance-bias tradeoff, meaning that the optimal solution will always be $r = R$. We start with the usual conventions by denoting $X \in \mathbb{R}^{n \times p}$ our data with $n$ observations and $p$ variables, then as presented in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), below is the pseudo-code of the Naïve approach:
 
   * split data $\mathbf{X}$ into $K$ folds $J_1,\ldots,J_K$ (row indices)
   * **for** $k=1,\ldots,K$:
@@ -100,7 +100,7 @@ Let $\tilde{X}$ be the dataset containing missing values randomly placed on the 
   * **end while**
   * return the estimated $\hat{\mu}, \hat{\Sigma}$
 
-This method slightly differs from the one presented in [Notes 05 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/05_EM.html), mainly due to poor results when estimating $\hat{\Sigma}$ and light confusion about notations used in the aforementioned implementation. Another matrix approach for the EM algorithm was also tried from [Machine Learning, Murphy](http://noiselab.ucsd.edu/ECE228/Murphy_Machine_Learning.pdf) which gave good results for $\hat{mu}$ but was also unsuccessful when predicting $\hat{\Sigma}$ when $r$ becomes too large.
+This method slightly differs from the one presented in [Notes 05 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/05_EM.html), mainly due to poor results when estimating $\hat{\Sigma}$ and light confusion about notations used in the aforementioned implementation. Another matrix approach for the EM algorithm was also tried from [Machine Learning, Murphy](http://noiselab.ucsd.edu/ECE228/Murphy_Machine_Learning.pdf) which gave good results for $\hat{\mu}$ but was also unsuccessful when predicting $\hat{\Sigma}$ when $r$ becomes too large.
 
 Below is the pseudo-code for the Missing Data method :
 
@@ -114,10 +114,10 @@ Below is the pseudo-code for the Missing Data method :
   * **end for**   
   * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k} \|\hat{\mathbf{X}}^m_{miss}-\mathbf{X}^m_{miss}\|^2_2$
   
-  As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the dataset and can be seen as holes in the dataset, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the dataset, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ did the job.
+  As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the dataset and can be seen as holes in the dataset, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the dataset, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ function call did the job.
 
 ## KDE modified approach
-This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian dataset of size $n \times p$ The goal is to minimize w.r.t $R$ the following quantity :
+This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian dataset of size $N \times p$ The goal is to minimize w.r.t $R$ the following quantity :
 
 \[
 \mathbb{E} \| \widehat{C}_R - C \|_F^2 = \mathbb{E}\| \widehat{C}_R \|_F - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_F^2
@@ -134,13 +134,13 @@ Therefore, since the truncated covariance estimator is not linear we obtain an a
 * Estimate Covariance $\widehat{C}$ from given data $X$
 * Decompose $\widehat{C}$ and set $p-R$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $R$ ($\widehat{C}_R$)
 * Set $Err_R = \|\widehat{C}_R\|_F$
-* **for** $j$ in $1,\dots,n$:
+* **for** $j$ in $1,\dots,N$:
   - Compute $\widehat{C}_R^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $X$ then truncate it to rank $R$.
-  - Subtract $\frac{2}{n}\langle\widehat{C}_R,\widehat{C}_R^{(-j)}\rangle$ from $Err_R$
+  - Subtract $\frac{2}{N}\langle\widehat{C}_R,\widehat{C}_R^{(-j)}\rangle$ from $Err_R$
 * **end**
 * Choose $R^* = \underset{R}{\mathrm{arg\,min}} \quad Err_R$ according to the minimal error $Err_R$
 
-Stepping into the for-loop we realize that it actually resembles a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_R$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $R$
+Stepping into the for-loop we realize that it is pretty similar to a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_R$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $R$.
 
 ## Matrix completion method
 
@@ -174,13 +174,13 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ w.r.
 
 ## Simulation dataset description
 
-After the end of [2. Cross-validation on PCA methods] we will be equipped with multiple approaches which enable us to recover the best amount of dimensions needed to represent data "accurately" of a data set. Intuitively, every method must have its different advantages and draw backs.
-In order to get a better feeling on how our Cross-Validation methods behave in different circumstances, we will run a simulation study on a variety of synthesized data sets. This allows us to discover the limits of the different methods used and allow us to conclude and recommend different Algorithms w.r.t its underlying data. 
-As by construction of our Alogrithms every single one of them besides the [2.1 Naïve Approach], the [2.5 Matrix completion method] is only applicable to Multivariate Gaussian distributed data. Therefore we restrict ourselves to this special distribution and create corresponding data in order to get meaningful results. All in all, we consider $12$ different data sets and compare the results of our five algorithms. Furthermore, we only consider centered Gaussian Multivariate Random variables and create three base data sets, on which we infer four kinds of different noises. The first data set is a standard Multivariate Gaussian data set while the second and third base data sets will rely on a random and structured covariance matrix. We denote our base data sets as $D^{i}_0, D^{i}_1$ and $D^{i}_2$ and $i \in \{1,\dots,3\}$. It consists of data $X=\{X^1,\dots,X^n\}$ and noise $\epsilon^{i}$. The amount of different parameters make it difficult to write get a single big picture of the problem, which is the reason we implemented a Shiny App that lets the reader tune the parameters as he pleases. We strongly recommend to check it out and test the limits of cross-validation for him oder herself. 
+As described in[Cross-validation on PCA methods], one is now equipped with multiple approaches to recover the best amount of dimensions needed to represent data "accurately" of a data set. Intuitively, every method must have its different advantages and drawbacks.
+To get a better feeling on how the Cross-Validation methods behave in different circumstances, one can run a simulation study on a variety of synthesized data sets. This allows us to discover the limits of the different methods used and to conclude and recommend different Algorithms with respect to its underlying data. 
+By construction of our Algorithms, every single one of them besides the [Naïve Approach], the [Matrix completion method] is only applicable to Multivariate Gaussian distributed data. Therefore we restrict ourselves to this special distribution and create corresponding data in order to get meaningful and comparable results. All in all, $9$ different data sets were considered and the results of the five algorithms were compared. Furthermore, we only consider centered Gaussian Multivariate Random variables and create three base data sets, on which we infer three kinds of different noises. The first data set is a standard Multivariate Gaussian data set while the second and third base data sets will rely on a random and structured covariance matrix respectively. We denote our base data sets as $D^{i}_0, D^{i}_1$ and $D^{i}_2$ for $i \in \{1,\dots,3\}$, corresponding to each type of noise. It consists of data $\mathbf{X}=\{\mathbf{X}^1,\dots,\mathbf{X}^N\}$ and noise $\epsilon^{i}$. The amount of different parameters make it difficult to write get a single big picture of the problem, which is the reason we implemented a Shiny App that lets the reader tune the parameters as he pleases. We strongly recommend to check it out and test the limits of the implemented cross-validation methods. 
 
 \[
-D^{i}_0 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \mathbb{1}_{p\times p}), \forall j = 1,\dots,n\\
-D^{i}_1 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \Sigma_1), \forall j = 1,\dots,n \text{ and } \Sigma_1=M\cdot M^{T}, (M_{ij})_{1\leq i,j\leq p} \stackrel{\text{iid}}{\sim} \mathcal{N}(0,1)\\
+D^{i}_0 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \mathbb{1}_{p\times p}), \forall j = 1,\dots,N\\
+D^{i}_1 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \Sigma_1), \forall j = 1,\dots,N \text{ and } \Sigma_1=M\cdot M^{T}, (M_{ij})_{1\leq i,j\leq p} \stackrel{\text{iid}}{\sim} \mathcal{N}(0,1)\\
 D^{i}_2 = X + \epsilon^{i}_p, \text{ where } X^j\sim\mathcal{N}(0, \Sigma_2), \forall j = 1,\dots,n \text{ and } \Sigma_2=M\cdot M^{T}, (M_{ij})_{1\leq i,j\leq p}=\frac{(i-1)p+j}{p}
 \]
 
@@ -194,22 +194,22 @@ M =
   7 & 8 & 9 \\
 \end{pmatrix}
 \implies
-\Sigma_2 = \begin{pmatrix}
-0.81 & 0.96 & 1.11 \\
-0.96 & 1.15 & 1.33 \\
-1.11 & 1.33 & 1.56 \\
+\Sigma_2 = \frac{1}{81}\begin{pmatrix}
+66 & 78 & 90 \\
+78 & 93 & 108 \\
+90 & 108 & 126 \\
 \end{pmatrix}
 \]
 
-In order to have valid comparisons across all of our methods and validate their correctness, we modify $X$. First, we realize that by the random construction of $X$, we can assume that it has full rank $p$. Second, we truncate it to a specific rank $r$, which should be the recommended dimensions of our Algorithms. Due to asymmetry of $X$, we do so by performing a singular value decomposition of $X$ with the built-in `svd()` function. We will set the $p-r$ smallest of its singular values to $0$. This enables us to control the rank of $X$. We realize that $D_2$ is rank $2$ before adding noise. Having adapted $X$, we infer either uniform noise, differing noise or noise that will increase for each variable.
+In order to have valid comparisons across all of our methods and validate their correctness, we fix the rank of $\mathbf{X}$ as follows. First, we realize that by the random construction of $\mathbf{X}$, we can assume that it has full rank $p$. Second, we truncate it to a specific rank $r$, which should be the recommended number of PCs of our Algorithms. Due to asymmetry of $\mathbf{X}$, we do so by performing a singular value decomposition of $\mathbf{X}$ with the built-in `svd()` function. We will set its $p-r$ smallest singular values to $0$; which enables us to control its rank. Please note that $D_2$ is already of rank $2$ before adding noise. Having adapted $\mathbf{X}$, we infer either uniform noise, differing noise or noise that will increase for each variable.
 
 \[
-\epsilon^{1}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma^2=1.5 \\
-\epsilon^{2}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma^2=0.2 \\
-\epsilon^{3}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0, U), U_{ii}\stackrel{\text{iid}}{\sim} \mathcal{U}([0,2]) \text{ and } U_{ij}=0, \text{for } i\neq j \\
+\epsilon^{1}_p \stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma=0.02*Val_{SVD}^r \text{ where } Val_{SVD}^r \text{ is the r-th singular value of } \mathbf{X}\\
+\epsilon^{2}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0,\sigma^2\mathbb{1}_{p\times p}), \sigma=0.001*Val_{SVD}^r \\
+\epsilon^{3}_p\stackrel{\text{iid}}{\sim}\mathcal{N}(0, U), U_{ii}\stackrel{\text{iid}}{\sim} \mathcal{U}([0,0.005*Val_{SVD}^r]) \text{ and } U_{ij}=0, \text{for } i\neq j \\
 \]
 
-We run our simulation with $n=100$ observations per data set and $p=8$ variables. We truncate our data set to rank $r=3$ and repeat our cross-validation $sim=20$ times on the seed $1312$. The methods using classical cross-validation will loop over $K=5$ folds.
+We run our simulation with $n=100$ observations per data set and $p=8$ variables. We truncate our data set to rank $r=3$ and repeat our cross-validation $sim=5$ times on the seed $1312$. The methods using classical cross-validation will loop over $K=5$ folds. In order to take into consideration the magnitude of our dataset, we chose to multiply the noise's variance by the $r-th$ singular value of $\mathbf{X}$.
 
 ## Comparison with respect to noise
 
@@ -217,36 +217,62 @@ For this analysis, we focus on $D_0 \in \mathbb{R}^{N \times p}$ and will vary t
 
 ```{r Noise0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
 
-plot_dataset_together_log <- function(method_str,dataset_number){
+plot_dataset_together <- function(method_str,dataset_number,log){
 
 load(paste0("datasets_plots/",method_str,".Rdata"))
 
 errors <- chosen[[4+dataset_number]]
 p <- dim(errors[[1]])[2]
-
 color_p <- c("orange", "darkblue","darkgray")
-# compute ylim
-ymin <- Inf
-ymax <- -Inf
-for (j in 1:3){
-  candid <- log(colMeans(errors[[j]]))
-  if (ymin > min(candid)){
-    if (ymin<0){
-      ymin <- min(candid)*1.05
-    }else{
-      ymin <- min(candid)*0.95
+
+if (log == T){
+  ymin <- Inf
+  ymax <- -Inf
+  for (j in 1:3){
+    candid <- log(colMeans(errors[[j]]))
+    if (ymin > min(candid)){
+      if (ymin<0){
+        ymin <- min(candid)*1.05
+      }else{
+        ymin <- min(candid)*0.95
+      }
+    }
+    if (ymax < max(candid)){
+      ymax <- max(candid)*1.05 
     }
   }
-  if (ymax < max(candid)){
-    ymax <- max(candid)*1.05 
+  
+  plot(1:p, log(colMeans(errors[[1]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t noise"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+  
+  #par(mfrow=c(1,3))
+  for (j in 2:3){
+    lines(1:p, log(colMeans(errors[[j]])), xlab="Rank r", ylab="Error in logscale",type="b",lwd = 2,col=color_p[j])
   }
-}
-
-plot(1:p, log(colMeans(errors[[1]])), xlab="Rank r", ylab="Error in logscale", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t noise"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
-
-#par(mfrow=c(1,3))
-for (j in 2:3){
-  lines(1:p, log(colMeans(errors[[j]])), xlab="Rank r", ylab="Error in logscale",type="b",lwd = 2,col=color_p[j])
+}else{
+  ymin <- Inf
+  ymax <- -Inf
+  for (j in 1:3){
+    candid <- colMeans(errors[[j]])
+    if (ymin > min(candid)){
+      if (ymin<0){
+        ymin <- min(candid)*1.05
+      }else{
+        ymin <- min(candid)*0.95
+      }
+    }
+    if (ymax < max(candid)){
+       if (ymax<0){
+          ymax <- max(candid)*0.95
+        }else{
+          ymax <- max(candid)*1.05
+        }
+    }
+  }
+  plot(1:p, colMeans(errors[[1]]), xlab="Rank r", ylab="Error", main=TeX(paste0(method_str," error on $D_",dataset_number,"$ w.r.t noise"), bold=T),type="b",cex.main=1, cex.lab=1.5,cex.axis=1.4,lwd = 2,ylim = c(ymin,ymax),col=color_p[1])
+  for (j in 2:3){
+    lines(1:p, colMeans(errors[[j]]), xlab="Rank r", ylab="Error",type="b",lwd = 2,col=color_p[j])
+  }
+  
 }
 legend("topright", legend=c("Noise n°1", "Noise n°2","Noise n°3"),
        col=color_p,lty = 1, cex=0.8)
@@ -265,59 +291,65 @@ plot_three <- function(method_str,dataset_number){
 }
 
 par(mfrow=c(2,2))
-plot_dataset_together_log("Wrong PCA",0)
-plot_dataset_together_log("Wrong PCA Improved",0)
-plot_dataset_together_log("Missing Data",0)
-plot_dataset_together_log("Matrix Completion",0)
+plot_dataset_together("Wrong PCA",0,T)
+plot_dataset_together("Wrong PCA Improved",0,T)
+plot_dataset_together("Missing Data",0,T)
+plot_dataset_together("Matrix Completion",0,T)
 ```
 
-Fixing our data set to be $D_0$ and applying our CV Methods, we get very different result for every single one of them. The error of the [Naïve Approach] decreases continuously and achieves its best estimation when allowing the method to make use of all $8$ variables.
+Fixing our data set to be $D_0$ and applying our CV Methods, we get very different results for each algorithm. Please note that the $y$-axis in in logscale in order to get meaningful insights about the errors, especially for the [Missing Data approach]. First, the error of the [Naïve Approach] decreases continuously and achieves its best estimation when allowing the method to make use of all $8$ variables, as theoretically expected.
 
-The Wrong PCA Method Improved method however reacts negatively after surpassing the rank $r=3$ of our truncated data set. The slight perturbation show that the estimation usually get slightly worse. Overall this would lead the Wrong PCA Improved Method to favor rank $3$ as estimate for the rank of our modified data set. This behavior stays the same after having added high noise or low and differing noise. In general we can still see that the Wrong PCA has difficulties to extract the exact amount of variables, especially when the added noise to the data set is constantly high.
+The Wrong PCA Method Improved method will however counter this behavior and the error will rise after hitting the optimal $r=3$ value. Overall this would lead the Wrong PCA Improved Method to favor rank $3$ as estimate for the rank of our modified data set. In general we can still see that the Wrong PCA Improved has difficulties to extract the exact amount of variables, especially when the added noise to the data set is constantly high, as the high curve in yellow is less steep than the blue one with low noise. We also note that for the high noise curve, there is a tendency to revert back when $r$ increases, which might cause problems as the biggest value $r$ might be returned.
 
-The [Missing data approach] differs in its overall behavior from the previous to methods. While the error only decreases slightly in the first and the second variable, it drops noticably for the third one (in our Simulation Study espcially for low and differing noise). Exceeding rank $3$ we observe a strong increase in the error and accordingly its estimation of the data set. In this case we can conclude the this approach also finds the correct dimension, but we have to be careful of the amount of noise added as this challenges the algorithm quite a bit.
+The [Missing data approach] differs in its overall behavior from the previous to methods. While the error only decreases slightly in the first and the second variable, it drops noticeably for $r=3$ in our Simulation Study especially for low and differing noise. Exceeding rank $3$, there is a strong increase in the error due to the $\Sigma$ estimation of the EM-Algorithm diverging from the expected value. A possible reason for this divergence is the choice of initial covariance matrix (in our case the Identity matrix). Here, we conclude the this approach also finds the correct dimension, but one has to be careful of the amount of noise added as this challenges the algorithm quite a bit.
 
 The error measure of the [Matrix completion method] seems to be a mix of the error of the Wrong PCA Improved and the Missing Data approach. We observe a slight increase in the first two variables, followed by a strong error drop on variable $3$ before it starts to increase again. The increase after variable $3$ is clearly stronger than at the beginning.
 
-Now we want to examine how our methods work, when moving from the identity matrix as covariance to a random matrix.
+As for the [KDE Modified Approach], it will be analysed at the end of this section due to similar behaviors with respect to different datasets.
+
+After this initial analysis, one would like to examine how the CV methods generalize to other datasets, i.e. moving from the identity matrix as covariance to a random matrix. Hereafter are the results for $D_1$, being the dataset with a random covariance matrix, as defined in the [Simulation dataset description]
 
 ```{r Noise1, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 1 dataset with different noises as indicated by Noise°1,2 and 3"}
 par(mfrow=c(2,2))
-plot_dataset_together_log("Wrong PCA",1)
-plot_dataset_together_log("Wrong PCA Improved",1)
-plot_dataset_together_log("Missing Data",1)
-plot_dataset_together_log("Matrix Completion",1)
+plot_dataset_together("Wrong PCA",1,T)
+plot_dataset_together("Wrong PCA Improved",1,T)
+plot_dataset_together("Missing Data",1,T)
+plot_dataset_together("Matrix Completion",1,T)
 ```
 
+<<<<<<< HEAD
 The [Naive Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards. Again we see how the total noise added accounts for the different stabilization errors. For the Missing Data Approach error we observe a strong similarity to the previous analysis. Its error starts to decrease until variable $3$ and then spikes up to stabilize. The only noticable difference is, that the total amount of noise added plays now a stronger criterion on where the curve converges. With the uniform low noise converging with the lowest error. In the Matrix Completion method we now observe that the algorithms doesn't screw up its prediction with high uniform noise, but does this time for differing noise. For high noise the method favors $3$ variables, where as it chooses $2$ variables for differing noise. For a uniform low noise it seems to work well by, having a sharp decrease in error rank $3$ and then increasing again.
 
 We now examine to which extent our algorithms change if we consider a structured covariance $\Sigma_2$, with increasing impact on the last variables.
+=======
+The [Naïve Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards especially for Noise n°3. Again we see how the total noise added accounts for the different stabilization error. Interestingly, the Missing Data Approach  and the Matrix Completion Method aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the  and starts beneath 
+>>>>>>> 42feed500abe249bc11b9e390e35b03af0f321e8
 
 ```{r Noise2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 2 dataset with different noises as indicated by Noise°1,2 and 3"}
 par(mfrow=c(2,2))
-plot_dataset_together_log("Wrong PCA",2)
-plot_dataset_together_log("Wrong PCA Improved",2)
-plot_dataset_together_log("Missing Data",2)
-plot_dataset_together_log("Matrix Completion",2)
+plot_dataset_together("Wrong PCA",2,T)
+plot_dataset_together("Wrong PCA Improved",2,T)
+plot_dataset_together("Missing Data",2,T)
+plot_dataset_together("Matrix Completion",2,T)
 ```
 
+<<<<<<< HEAD
 The Wrong PCA has behaves again the same regardless of the noise added. The first observation also applies for the Wrong PCA improved. The only subtlety we want to emphasize on, is that it seems once again to be sensitive with the total amount of noise added. A stronger decrease in the first two variables for the uniform and differing noise is observable.
 Interestingly, the Missing Data Approach  and the Matrix Completion Method don't seem to handle the kind of structure very well. In fact the algorithms aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the other two error curves but then exceed them after rank $5$. The adhesivity is somewhat stronger for the error  Matrix completion error as the error curve is almost identical regardless of the noise added.
 
 ```{r NoiseMissing0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
 plot_three("KDE Approach",0)
+=======
+```{r NoiseKDE, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Modified Approach for the 3 datasets with different noises as indicated by Noise°1,2 and 3"}
+par(mfrow=c(1,3))
+plot_dataset_together("KDE Approach",0,F)
+plot_dataset_together("KDE Approach",1,F)
+plot_dataset_together("KDE Approach",2,F)
+>>>>>>> 42feed500abe249bc11b9e390e35b03af0f321e8
 ```
 
-```{r NoiseMissing1, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 1 dataset with different noises as indicated by Noise°1,2 and 3"}
-plot_three("KDE Approach",1)
-```
 
-```{r NoiseMissing2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 2 dataset with different noises as indicated by Noise°1,2 and 3"}
-plot_three("KDE Approach",2)
-```
-
-We will analyze the error of the [KDE modified approach] for all the different data set together as it behaves mostly independent of them and thus pretty similar. In general we see that for every variable until the third one it drops very strongly. Having reached rank $3$ the quality of its estimation seem to stay the same and correspondingly the error. In case of the second data set we observe the same behaviour but instead of stabilizing after rank $3$ it does that after reaching variable $2$ by construction of our data set.
-
+For the [KDE Modified Approach], we observe in general that for every variable until the third one it drops very strongly. Having reached rank $3$ the quality of its estimation seem to stay the same and correspondingly the error. In case of the second data set we observe the same behaviour but instead of stabilizing after rank $3$ it does that after reaching variable $2$ by construction of our data set.
 
 
 ## Comparison with respect to initial covariance matrix 
