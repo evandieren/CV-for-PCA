@@ -165,16 +165,17 @@ n <- 100
 p <- 8
 K <- 5
 sim <- 5
-r <- 3 # truncated dimension of data set
-# noise <- c(0.02,0.001,0.005) # noise used for scree plots
 noise <- c(0.02,0.001,0.005)
+name <- "Matrix Completion"
 
-name <- "Wrong PCA Improved"
-
+# Uncomment to simulate :-)
 # WrongPCA, WrongPCAImproved, MissingData, MatrixCompletion, KDEApproach
-set.seed(1312)
-chosen <- SimulationStudy(WrongPCAImproved,name, n, p, K, r, sim, noise, meth=T, eigen=F)
-save(chosen,file=paste0("./datasets_plots/",name,".Rdata"))
+#for (r in 1:p){
+#  set.seed(1312)
+#  chosen <- SimulationStudy(MatrixCompletion,name, n, p, K, r, sim, noise, meth=T, eigen=F)
+#  save(chosen,file=paste0("./datasets_plots/r_analysis/",name,"_",r,".Rdata"))
+#}
+
 
 #chosen[[1]]
 #chosen[[2]]
