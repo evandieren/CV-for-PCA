@@ -289,7 +289,9 @@ plot_dataset_together_log("Missing Data",1)
 plot_dataset_together_log("Matrix Completion",1)
 ```
 
-The [Naive Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards. Again we see how the total noise added accounts for the different stabilization error. Interestingly, the Missing Data Approach  and the Matrix Completion Method aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the  and starts beneath 
+The [Naive Approach] seems to preserve the same shape and error size as on $D_0$. The Wrong PCA Improved method slightly changes as it still drops in within the first three variables, but stabilizes more strongly afterwards. Again we see how the total noise added accounts for the different stabilization errors. For the Missing Data Approach error we observe a strong similarity to the previous analysis. Its error starts to decrease until variable $3$ and then spikes up to stabilize. The only noticable difference is, that the total amount of noise added plays now a stronger criterion on where the curve converges. With the uniform low noise converging with the lowest error. In the Matrix Completion method we now observe that the algorithms doesn't screw up its prediction with high uniform noise, but does this time for differing noise. For high noise the method favors $3$ variables, where as it chooses $2$ variables for differing noise. For a uniform low noise it seems to work well by, having a sharp decrease in error rank $3$ and then increasing again.
+
+We now examine to which extent our algorithms change if we consider a structured covariance $\Sigma_2$, with increasing impact on the last variables.
 
 ```{r Noise2, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=8,fig.cap = "Comparison of CV methods on base 2 dataset with different noises as indicated by Noise°1,2 and 3"}
 par(mfrow=c(2,2))
@@ -298,6 +300,9 @@ plot_dataset_together_log("Wrong PCA Improved",2)
 plot_dataset_together_log("Missing Data",2)
 plot_dataset_together_log("Matrix Completion",2)
 ```
+
+The Wrong PCA has behaves again the same regardless of the noise added. The first observation also applies for the Wrong PCA improved. The only subtlety we want to emphasize on, is that it seems once again to be sensitive with the total amount of noise added. A stronger decrease in the first two variables for the uniform and differing noise is observable.
+Interestingly, the Missing Data Approach  and the Matrix Completion Method don't seem to handle the kind of structure very well. In fact the algorithms aren't able to return more precise estimation with a higher amount of variables and actually increase in error size. Both have kind of the same shape and error size, whereas the latter one seems to be a smoother version of the first one. Also the error curve sticks closely together for the uniform noise in the Missing Data Approach, whereas the differing noise starts beneath the other two error curves but then exceed them after rank $5$. The adhesivity is somewhat stronger for the error  Matrix completion error as the error curve is almost identical regardless of the noise added.
 
 ```{r NoiseMissing0, echo=FALSE,out.width="80%", fig.align = 'center', fig.width=12,fig.height=4,fig.cap = "KDE Approach for base 0 dataset with different noises as indicated by Noise°1,2 and 3"}
 plot_three("KDE Approach",0)
