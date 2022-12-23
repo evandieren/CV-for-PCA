@@ -14,7 +14,7 @@ library(ggplot2)
 library(ggpubr)
 
 # Define UI
-ui <- fluidPage(
+ui1 <- fluidPage(
   
   # Application title
   titlePanel("h_opt(x) exploration by sample size, location and beta parameters"),
@@ -52,7 +52,7 @@ ui <- fluidPage(
 )
 
 # Define server logic
-server <- function(input, output) {
+server1 <- function(input, output) {
   
   output$distPlot <- renderPlot({
     n <- input$n
@@ -76,6 +76,7 @@ server <- function(input, output) {
       D <- (sec_der_m(x)*int_z_sqrd_kernel)**2*dbeta(x, shape1, shape2)
       return( n**(-1/5)*(N/D)**(1/5))
     }
+    
     x_plot <- seq(from=0,to=1,by=0.01)
     h_val_x <- h_opt(x)
     par(mfrow=c(3,1))
@@ -89,4 +90,4 @@ server <- function(input, output) {
 }
 
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui1, server = server1)
