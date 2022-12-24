@@ -17,7 +17,7 @@ ui <- fluidPage(
             paramters in a PCA analysis come into play. Keep in mind that simulations take a bit of time
             and that the truncated rank of the data set has to be smaller then the amount of
              variables. The noise in % indicates the amount of noise added with respect to the last untruncated
-    singular value the initial base data set."),
+    singular value of the initial base data set."),
   # Sidebars
   sidebarLayout(
     sidebarPanel(
