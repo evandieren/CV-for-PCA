@@ -153,7 +153,7 @@ This approach is a modification of the KDE  method from [Notes 06 - T. Masak](ht
 with $\widehat{C}_r$ being the truncated covariance estimator of rank $r$, $C$ being the covariance matrix and $\|.\|_F$ being the Frobenius norm while $\langle X, Y \rangle$ represents the sum of all elements from the Hadamard product of the two matrices $X,Y$, or in mathematical terms : $\langle X, Y \rangle := \sum_{i,j}X_{i,j}Y_{i,j}$.
 Assuming that the mean of $\mathbf{X}$ is zero, we get:
 \[
-\mathbb{E} \langle \widehat{C}_r^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_r^{(-n)}}_{\approx \mathbb{E} \widehat{C}_r}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_r , X_n X_n^\top \rangle
+\mathbb{E} \langle \widehat{C}_r^{(-n)}, \mathbf{X}_n \mathbf{X}_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_r^{(-n)}}_{\approx \mathbb{E} \widehat{C}_r}], \underbrace{\mathbb{E} [\mathbf{X}_n \mathbf{X}_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_r , \mathbf{X}_n \mathbf{X}_n^\top \rangle
 \]
 
 Therefore, since the truncated covariance estimator is not linear we obtain an approximation, which we will plug back into the initial quantity we wish to minimize. By differentiating the quantity w.r.t $r$, we obtain the desired ranking as it will be the only value depending on $r$. Overall, we implement this method as follows for every rank $r$:
@@ -162,8 +162,8 @@ Therefore, since the truncated covariance estimator is not linear we obtain an a
 * Decompose $\widehat{C}$ and set $p-r$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $r$ ($\widehat{C}_r$)
 * Set $Err_r = \|\widehat{C}_r\|_F$
 * **for** $j$ in $1,\dots,N$:
-  - Compute $\widehat{C}_r^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $\mathbf{X}$ then truncate it to rank $r$.
-  - Subtract $\frac{2}{N}\langle \widehat{C}_r^{(-j)}, X_jX_j^T\rangle$ from $Err_r$
+  - Compute $\widehat{C}_r^{(-j)}$ by estimating the covariance of $\mathbf{X}^{(-j)}$, $j$ being the missing observation in $\mathbf{X}$ then truncate it to rank $r$.
+  - Subtract $\frac{2}{N}\langle \widehat{C}_r^{(-j)}, \mathbf{X}_j\mathbf{X}_j^T\rangle$ from $Err_r$
 * **end**
 * Choose $r^* = \underset{r}{\mathrm{arg\,min}} \quad Err_r$ according to the minimal error $Err_r$
 
