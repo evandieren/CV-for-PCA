@@ -26,9 +26,9 @@ library(RColorBrewer)
 
 ## Problem description
 
-When dealing with modern large data sets, the observations' dimensionality often becomes a problem regarding the interpretability of the data set, or for its vizualisation, especially during the data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the data set, while trying to keep as much information as possible from the original data set (i.e. variance). An example of PCA usage is bringing a high-dimension data set to $\mathbb{R}^2$ or $\mathbb{R}^3$ to vizualise its datapoints and afterwards identifying clusters. It does so by computing Principal components from the data set and then projecting datapoints to this new basis.
+When dealing with large data sets, the observations' dimensionality often becomes a problem regarding its interpretability and vizualisation, especially during the data exploration phase. The Principal Component Analysis (PCA) is a statistical technique used to reduce the dimension of the data set, while trying to preserve as much information as possible (i.e. variance). An example of PCA usage is bringing a high-dimension data set to $\mathbb{R}^2$ or $\mathbb{R}^3$ in order to vizualise its datapoints and potentially identifying clusters. It does so by computing the principal components of a data set and projecting the datapoints to a new, lower-dimensional basis.
 
-Mathematically speaking, we can define principal components as an orthonormal basis of unit vectors which sequentially capture the most variance in the data. Practically, the PCs can be found with the following optimization problems for a given centered Gaussian data set $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
+Mathematically speaking, we can define principal components as an orthonormal basis of unit vectors which sequentially capture the most variance in the data. Practically, the PCs can be found by solving the following optimization problems for a given centered Gaussian data set $\mathbf x_1,\ldots,\mathbf x_N \in \mathbb{R}^p$: 
 \[
 \begin{split}
 v_1 &= \underset{v, \| v \|=1}{\mathrm{arg\,max}} \mbox{ } v^\top \widehat{\boldsymbol{\Sigma}} v \\
@@ -37,7 +37,7 @@ v_2 &= \underset{v, \| v \|=1, v^\top v_1 = 0}{\mathrm{arg\,max}} v^\top \wideha
 \end{split}
 \]
 
-with $\widehat{\Sigma} = N^{-1}\sum_{n=1}^N \mathbf x_n \mathbf x_n^\top \in \mathbb{R}^{p\times p}$ being the empirical covariance matrix of the data set. More information about Principal component analysis can be found in [Jolliffe, 2002](https://link.springer.com/book/10.1007/b98835) or directly on [Wikipedia](https://en.wikipedia.org/wiki/Principal_component_analysis).
+with $\widehat{\Sigma} = \frac{1}{N}\sum_{n=1}^N \mathbf x_n \mathbf x_n^\top \in \mathbb{R}^{p\times p}$ being the empirical covariance matrix of the data set. More information about Principal Component Analysis can be found in [Jolliffe, 2002](https://link.springer.com/book/10.1007/b98835) or directly on [Wikipedia](https://en.wikipedia.org/wiki/Principal_component_analysis).
 
 
 ```{r, echo=FALSE, fig.align = 'center', out.width = "25%", fig.cap = "Example of 2 PCs on a given data set in $R^2$"}
@@ -45,9 +45,9 @@ knitr::include_graphics("./Figures/PCA_p_2_example.png")
 ```
 
 
-This project focuses on finding the optimal number of principal components ($r$), which dictates a trade-off between the model's complexity and its interpretability. In fact, higher the $r$, higher the explained variance, but less interpretable the data set. To optimally choose the number of PCs, several techniques have been created, such as the method of percentage of variance explained, the scree-plot method or Cross-validation for PCA.
+This project focuses on finding the optimal number of principal components - we will refer to it as $r$ - which dictates a trade-off between the model's complexity and its interpretability. In fact, the higher $r$, the higher the explained variance, but less interpretable the data set. To optimally choose the number of PCs, several techniques have been created, such as the Percentage of Variance Explained method, the Scree-plot method or Cross-Validation for PCA.
 
-In this report, one will first find a presentation of each Cross-Validation method for PCA with an initial description, followed by a pseudo-code in [Cross-validation on PCA methods]. Then, those methods will be ran on simulated data sets with different parameters in [Simulation and comparison of CV methods]. Furthermore, the percentage of variance explained and the scree-plots methods will be described and tested in [Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well as next steps which could be conducted regarding this subject.
+In this report, we start by presenting each Cross-Validation method for PCA with an initial description and complementing it by a pseudo-code in [Cross-validation on PCA methods]. Those methods will be then ran on simulated data sets with different parameters in [Simulation and comparison of CV methods]. Furthermore, the Percentage of Variance Explained and the Scree-plot methods will be described and tested in [Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well present next steps that could be conducted regarding this subject.
 
 # Cross-validation on PCA methods
 
@@ -612,5 +612,7 @@ Compared to CV methods described in [Cross-validation on PCA methods], those met
 # Conclusion
 
 In conclusion, several methods for choosing the optimal number of components have been presented. We were able to observe the behavior of those CV methods depending on the noise, the structure of covariance matrices and the truncated dimensions thanks to simulations on various data sets. We concluded that most methods are able to give accurate predictions in very specific and especially unnoisy circumstances. We have seen that the amount of noise is crucial for a method in order to get useless, e.g. in Matrix Completion in \@ref(fig:Noise0) or Matrix Completion in \@ref(fig:Noise1). Not only the added noise but also the underlying covariance matrix impacts the quality of the ouput of the CV-Methods as we were able to see in Figure \@ref(fig:Noise2). Moreover, we had to assume that our data set was a centered multivariate Gaussian for every method to be comparable, however, some methods generalize better to other type of data set's distribution (Matrix Completion for example) while others are at least the way we made use of them restricted to this special distribution [Wrong PCA Improved] or [Missing data approach]. While comparing these function and having set a "low" amount of observations, variables and simulations we hadn't that much of a struggle concerning computation time. Nevertheless we want to mention, that the last three methods we presented, hence the [Wrong PCA Improved], the [Matrix completion method] and the [KDE modified approach] are not very "efficient" algorithms.
+
+++ NEXT STEPS THAT COULD BE CONDUCTED (described in Introduction?)
 
 To get a better feeling on how the different parameters choosen in the simulations play together we want to encourage the reader to try out our [Shiny.app](https://github.com/evandieren/FinalProj-352934/blob/main/shiny.R)
