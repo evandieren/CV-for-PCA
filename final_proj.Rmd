@@ -86,14 +86,14 @@ When estimating $\hat{\mathbf{x}}^m_{miss}$, the linear estimator is used as it 
 
 Here it is assumed that the rows $\mathbf{X}_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $\mathbf{X}=(\mathbf{X}_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a multivariate Gaussian random variable of mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that rank$(\Sigma)=r$ for $r=1,…,R \le p$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ based on observed data by the EM algorithm while the set of missed and observed data is randomly selected at the beginning of the algorithm. Then, it performs more or less the same steps as the previous algorithm to find the optimal number of PCs. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
 
-Let $\tilde{X}$ be the data set containing missing values randomly placed on the original $N \times p$ data set. The EM algorithm works as follows :
+Let $\tilde{\mathbf{X}}$ be the data set containing missing values randomly placed on the original $N \times p$ data set. The EM algorithm works as follows :
 
-  * Initialize $\hat{\mu} = \frac{1}{N}\sum_{n=1}^N(\tilde{X}^{obs}_{n})$ and $\hat{\Sigma} = I_{p\times p}$, where $\tilde{X}_{obs}$ is the data set restricted to observed values.
+  * Initialize $\hat{\mu} = \frac{1}{N}\sum_{n=1}^N(\tilde{\mathbf{X}}^{obs}_{n})$ and $\hat{\Sigma} = I_{p\times p}$, where $\tilde{\mathbf{X}}_{obs}$ is the data set restricted to observed values.
   * Set $\hat{\Sigma}^{old} = C\hat{\Sigma}$, and $tol = 0.01$ for a given constant $C$ big enough to enter the while loop (e.g. $C = 600$)
   * **while** $(||\hat{\Sigma}-\hat{\Sigma}^{old}||_F > tol||\hat{\Sigma}^{old}||_F)$ where $||.||_F$ is the Frobenius norm
     - Set $\hat{\Sigma}^{old} = \hat{\Sigma}$
-    - Estimate $\tilde{X}_{miss}^{n}$ by a linear estimator : $\tilde{X}_{miss}^n = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs} \hat{\Sigma}_{obs}^{\dagger}(\tilde{X}_{obs}^n-\hat{\mu}_{obs})$
-    - Set $\hat{\mu} =\frac{1}{N}\sum_{n=1}^N(\tilde{X}_{n})$, $\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N (\tilde{X}_i-\hat{\mu})(\tilde{X}_i-\hat{\mu})^T$, i.e. the two MLE estimators
+    - Estimate $\tilde{\mathbf{X}}_{miss}^{n}$ by a linear estimator : $\tilde{\mathbf{X}}_{miss}^n = \hat{\mu}_{miss} + \hat{\Sigma}_{miss,obs} \hat{\Sigma}_{obs}^{\dagger}(\tilde{\mathbf{X}}_{obs}^n-\hat{\mu}_{obs})$
+    - Set $\hat{\mu} =\frac{1}{N}\sum_{n=1}^N(\tilde{\mathbf{X}}_{n})$, $\hat{\Sigma} = \frac{1}{N-1}\sum_{n=1}^N (\tilde{\mathbf{X}}_i-\hat{\mu})(\tilde{\mathbf{X}}_i-\hat{\mu})^T$, i.e. the two MLE estimators
   * **end while**
   * return the estimated $\hat{\mu}, \hat{\Sigma}$
 
@@ -116,29 +116,29 @@ Below is the pseudo-code for the Missing Data method :
 
 ## Matrix completion method
 
-This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $\mathbf{X} \in \mathbb{R}^{N\times p}$, but just that $\mathbf{X}$ has a finite rank. Indeed, for a given data matrix $\mathbf{X}$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $\mathbf{X}$. The matrix completion method consists of finding a matrix $\mathbf M$ such that :
+This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $\mathbf{X} \in \mathbb{R}^{N\times p}$, but just that $\mathbf{X}$ has a finite rank. Indeed, for a given data matrix $\mathbf{X}$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $\mathbf{X}$. The matrix completion method consists of finding a matrix $\mathbf{M}$ such that :
 
 \[
-    \mathrm{arg \, min}_{\mathbf{M}=(M_{ij})_{i,j=1}^{N \times p}} \sum_{(i,j) \notin \Omega} (\mathbf{X}_{ij} - M_{ij})^2 \quad \mathrm{s.t.} \quad \mathrm{rank}(\mathbf M)=R
+    \mathrm{arg \, min}_{\mathbf{M}=(\mathbf{M}_{ij})_{i,j=1}^{N \times p}} \sum_{(i,j) \notin \Omega} (\mathbf{X}_{ij} - \mathbf{M}_{ij})^2 \quad \mathrm{s.t.} \quad \mathrm{rank}(\mathbf M)=r
     \]
 
-This optimization method gives us the best matrix $\mathbf M$ with rank $R$ w.r.t least-square error on the missed data. However, finding the solution of such a optimization problem is $NP$-hard, so one can use the following iterative algorithm to find local best candidates for the matrix $\mathbb M$ :
+This optimization method gives us the best matrix $\mathbf M$ with rank $r$ w.r.t least-square error on the missed data. However, finding the solution of such a optimization problem is $NP$-hard, so one can use the following iterative algorithm to find local best candidates for the matrix $\mathbb M$ :
 
 
-  * Select an initial candidate $\mathbf{M}^{(0)}$, here : $M^{(0)}$ is a set of multivariate Guassian random variables with mean $\hat{\mu}_{obs}$ and covariance $I_{p\times p} where $\hat{\mu}_{obs}$ is the empirical mean computed for each column with its respective observed entries of the matrix.
+  * Select an initial candidate $\mathbf{M}^{(0)}$, here : $M^{(0)}$ is a set of multivariate Guassian random variables with mean $\hat{\mu}_{obs}$ and covariance $I_{p\times p}$ where $\hat{\mu}_{obs}$ is the empirical mean computed for each column with its respective observed entries of the matrix.
   * Set $l=0$, $tol = 10^{-4}$
   * **do**
-    - $l += 1$
+    - $l = l+1$
     - Compute the SVD of $\mathbf{M}^{(l-1)}$, i.e. $\mathbf{M}^{(l-1)} = UDV^T$
-    - Copy $D$ into $\widetilde{D}$ and set the $p-R$ diagonal elements of $\widetilde{D}$ to zero (truncating to rank $R$)
-    - Set $\widetilde{M} = U\widetilde{D}V^T$, the new matrix of rank $R$.
+    - Copy $D$ into $\widetilde{D}$ and set the $p-r$ diagonal elements of $\widetilde{D}$ to zero (truncating to rank $r$)
+    - Set $\widetilde{\mathbf{M}} = U\widetilde{D}V^T$, the new matrix of rank $r$.
     - Set $\mathbf{M}^{(l)}$as : 
     \[
-      \mathbf{M}^{(l)} = \begin{cases} \mathbf{X}_{ij} \quad \text{for } (i,j) \notin \Omega \\
-                                       \widetilde{M}_{i,j} \quad \text{for } (i,j) \notin \Omega \end{cases}
+      \mathbf{M}^{(l)} = \begin{cases} \mathbf{X}_{ij} \quad \text{for } (i,j) \in \Omega \\
+                                       \widetilde{\mathbf{M}}_{i,j} \quad \text{for } (i,j) \notin \Omega \end{cases}
       \]
   * **while $\|M^{(l)}-M^{(l-1)}\|_F> tol\|M^{(l)}\|_F$ and $l < 1000$**:
-  * Store the error $\sum_{(i,j) \in \Omega} (\mathbf{X}_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment for each value of $R$ from $1$ to $p$, then pick the $R$ which gives the lowest error.
+  * Store the error $\sum_{(i,j) \in \Omega} (\mathbf{X}_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment for each value of $r$ from $1$ to $p$, then pick the $r$ which gives the lowest error.
   
   We decided multiply the initial $\|M^{(l)}-M^{(l-1)}\|_F$ stopping criteria by $\|M^{(l)}\|_F$ to take into account the magnitude of the elements in $M$, and added the condition $l<1000$ in case of the algorithm would not converge to the desired tolerance in a reasonable amount of time. In other words, the algorithm stops and returns the matrix $M^{(l)}$ if there was a change of less than $0.01\%$ from the previous matrix $M^{(l-1)}$, or if we go above $1000$ iterations.
   
@@ -159,7 +159,7 @@ Assuming that the mean of $\mathbf{X}$ is zero, we get:
 Therefore, since the truncated covariance estimator is not linear we obtain an approximation, which we will plug back into the initial quantity we wish to minimize. By differentiating the quantity w.r.t $r$, we obtain the desired ranking as it will be the only value depending on $r$. Overall, we implement this method as follows for every rank $r$:
 
 * Estimate Covariance $\widehat{C}$ from given data $\mathbf{X}$
-* Decompose $\widehat{C}$ and set $p-r$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $R$ ($\widehat{C}_r$)
+* Decompose $\widehat{C}$ and set $p-r$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $r$ ($\widehat{C}_r$)
 * Set $Err_r = \|\widehat{C}_r\|_F$
 * **for** $j$ in $1,\dots,N$:
   - Compute $\widehat{C}_r^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $\mathbf{X}$ then truncate it to rank $r$.
