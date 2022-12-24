@@ -47,13 +47,13 @@ knitr::include_graphics("./Figures/PCA_p_2_example.png")
 
 This project focuses on finding the optimal number of principal components ($r$), which dictates a trade-off between the model's complexity and its interpretability. In fact, higher the $r$, higher the explained variance, but less interpretable the data set. To optimally choose the number of PCs, several techniques have been created, such as the method of percentage of variance explained, the scree-plot method or Cross-validation for PCA.
 
-In this report, one will first find a presentation of each Cross-Validation method for PCA with an initial description, followed by a pseudo-code in [2. Cross-validation on PCA methods]. Then, those methods will be ran on simulated data sets with different parameters in [3. Simulation and comparison of CV methods]. Furthermore, the percentage of variance explained and the scree-plots methods will be described and tested in [4. Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well as next steps which could be conducted regarding this subject.
+In this report, one will first find a presentation of each Cross-Validation method for PCA with an initial description, followed by a pseudo-code in [Cross-validation on PCA methods]. Then, those methods will be ran on simulated data sets with different parameters in [Simulation and comparison of CV methods]. Furthermore, the percentage of variance explained and the scree-plots methods will be described and tested in [Other PCs number selection methods]. Finally, the conclusion will wrap up the take-home messages as well as next steps which could be conducted regarding this subject.
 
 # Cross-validation on PCA methods
 
 ## Naïve Approach
 
-A widely used approach for Cross-validation in PCA is a method that has the right intentions but fails at a critical point: it does not take into account any variance-bias tradeoff, meaning that the optimal solution will always be $r = R$. We start with the usual conventions by denoting $X \in \mathbb{R}^{n \times p}$ our data with $n$ observations and $p$ variables, then as presented in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), below is the pseudo-code of the Naïve approach:
+A widely used approach for Cross-validation in PCA is a method that has the right intentions but fails at a critical point: it does not take into account any variance-bias tradeoff, meaning that the optimal solution will always be $r = R$. We start with the usual conventions by denoting $X \in \mathbb{R}^{N \times p}$ our data with $N$ observations and $p$ variables, then as presented in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), below is the pseudo-code of the Naïve approach:
 
   * split data $\mathbf{X}$ into $K$ folds $J_1,\ldots,J_K$ (row indices)
   * **for** $k=1,\ldots,K$:
@@ -64,9 +64,9 @@ A widely used approach for Cross-validation in PCA is a method that has the righ
 
 A numerical method to solve the least square problem in the top of the algorithm would be to compute the SVD decomposition of $\mathbf X[J_k^c,:]$ and truncate the rank to $r$ by setting the $p-r$ smallest singular values to zero. To estimate $\mathbf{x^{m}}, \forall m \in J_k$ with a lower dimensional version, we project it with the matrix $P_{\mathbf{\widehat{L}}}$ which can be computed via the the R built-in function `prcomp()` the returns among other objects a basis for the dimension of $\widehat{\mathbf L}$. The promised issue occurs when computing the error measure without further to-do. Thus the error obviously shrinks when $\widehat{\mathbf L}$ is allowed to have higher dimensions and converges to $0$ when its number of dimensions equals those of the initial data set $\mathbf{X}$, as the SVD will be a nearly exact representation of the matrix $\mathbf{X}$.
 
-## Artificially turn the unsupervised problem into a supervised one
+## Wrong PCA Improved
 
-This method corrects the [2.1 Naïve Approach] by introducing a Bias-Variance trade-off for the $Err_k$ function. Let again $\mathbf{X} \in \mathbb{R}^{n \times p}$ be our Multivariate Gaussian data set with $n$ observations and $p$ variables, mean $\mu$ and covariance $\Sigma$. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below :
+This method corrects the [Naïve Approach] by introducing a Bias-Variance trade-off for the $Err_k$ function. Let again $\mathbf{X} \in \mathbb{R}^{N \times p}$ be our Multivariate Gaussian data set with $N$ observations and $p$ variables, mean $\mu$ and covariance $\Sigma$. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), we implement this method as below :
 
   * split data into $K$ folds $J_1,\ldots,J_K$ (row indices)
   * **for** $k=1,\ldots,K$:
@@ -84,7 +84,7 @@ When estimating $\hat{\mathbf{x}}^m_{miss}$, the linear estimator is used as it 
 
 ## Missing data approach
 
-Here it is assumed that the rows $\mathbf{X}_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $\mathbf{X}=(\mathbf{X}_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a multivariate Gaussian random variable of mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that rank$(\Sigma)=r$ for $r=1,…,R$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ based on observed data by the EM algorithm while the set of missed and observed data is randomly selected at the beginning of the algorithm. Then, it performs more or less the same steps as the previous algorithm to find the optimal number of PCs. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
+Here it is assumed that the rows $\mathbf{X}_{n} \in \mathbb{R}^p, n=1,…,N$ of the data matrix $\mathbf{X}=(\mathbf{X}_{n,j})^{N,p}_{n,j=1}$ are i.i.d. realizations of a multivariate Gaussian random variable of mean $\mu \in \mathbb{R}^p$ and a covariance $\Sigma \in \mathbb{R}^{p \times p}$. We will assume that rank$(\Sigma)=r$ for $r=1,…,R \le p$, and compare how well different values of $r$ fit the data. As described in [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#no.-of-component-selection-for-pca), this approach is based on computing the estimators $\hat{\Sigma}$ and $\hat{\mu}$ based on observed data by the EM algorithm while the set of missed and observed data is randomly selected at the beginning of the algorithm. Then, it performs more or less the same steps as the previous algorithm to find the optimal number of PCs. Let us now describe the EM algorithm used in our case and then describe the Missing data approach algorithm.
 
 Let $\tilde{X}$ be the data set containing missing values randomly placed on the original $N \times p$ data set. The EM algorithm works as follows :
 
@@ -104,22 +104,22 @@ Below is the pseudo-code for the Missing Data method :
   * split the data set in $K$ folds $J_1,\ldots,J_K$ (row indices)
   * Compute the bivariate set of missed data $\Omega$
   * **for** $k=1,\ldots,K$:
-    - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the data set $X$ and missing indices $\Omega$
+    - Compute $\hat{\mu}$ and $\hat{\Sigma}$ by the EM algorithm with the data set $\mathbf{X}$ and missing indices $\Omega$
     - Truncate $\hat{\Sigma}$ to a rank $r$ matrix $\hat{\Sigma}_r$ by eigenvalue decomposition.
     - Reuse the missed data $\Omega$ to split the data points $\mathbf{x}^m\in \mathbb{R}^{p}, m \in J_k$ into a "missing" part $\mathbf{x}_{miss}$ that will be used for validation and an "observed" part $\mathbf{x}_{obs}$ in order to estimate its counterpart
     - Estimate the missing part from the observed part with a linear estimator using the $\hat{\mu}$ and $\hat{\Sigma}_r$ as previously described in the last CV method.
   * **end for**   
   * choose $\widehat{r} = \underset{r}{\mathrm{arg\,min}} \sum_{k=1}^K Err_k(r)$, where for instance $Err_k(r)$ can be considered as the MSE for every fold $J_k$, e.g. $Err_k(r)=\frac{1}{|J_k|}\sum_{m\in J_k} \|\hat{\mathbf{X}}^m_{miss}-\mathbf{X}^m_{miss}\|^2_2$
   
-  As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the data set and can be seen as holes in the data set, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the data set, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple $mean$ and $cov$ function call did the job.
+  As one can observe, this method is pretty similar to the previous one, except for the computation of the missing values method and the parameters estimation. Here, the missing values are randomly selected across the data set and can be seen as holes in the data set, while for the previous CV method, whole columns (aka variables) were taken as missed. Also, as we are now dealing with holes in the data set, it was not guaranteed that there would be a fully defined estimator for $\Sigma$, compared to the other method for which we could easily select parts of the observed and missed covariance. This forced us to use the EM algorithm for this CV method, as opposed to the other one where a simple `mean()` and `cov()` function call did the job.
 
 
 ## Matrix completion method
 
-This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $\mathbf{X} \in \mathbb{R}^{N\times p}$, but just that $X$ has a finite rank. Indeed, for a given data matrix $\mathbf{X}$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $\mathbf{X}$. The matrix completion method consists of finding a matrix $\mathbf M$ such that :
+This final methods is somehow a bit more general, as we do not need to assume any probability distribution of the data $\mathbf{X} \in \mathbb{R}^{N\times p}$, but just that $\mathbf{X}$ has a finite rank. Indeed, for a given data matrix $\mathbf{X}$, we assume that a portion of this matrix is missed and that the remaining elements are observed. Let $\Omega$ be a bivariate index set for the observed data in $\mathbf{X}$. The matrix completion method consists of finding a matrix $\mathbf M$ such that :
 
 \[
-    \mathrm{arg \, min}_{\mathbf{M}=(M_{ij})_{i,j=1}^{N \times p}} \sum_{(i,j) \in \Omega} (X_{ij} - M_{ij})^2 \quad \mathrm{s.t.} \quad \mathrm{rank}(\mathbf M)=R
+    \mathrm{arg \, min}_{\mathbf{M}=(M_{ij})_{i,j=1}^{N \times p}} \sum_{(i,j) \notin \Omega} (\mathbf{X}_{ij} - M_{ij})^2 \quad \mathrm{s.t.} \quad \mathrm{rank}(\mathbf M)=R
     \]
 
 This optimization method gives us the best matrix $\mathbf M$ with rank $R$ w.r.t least-square error on the missed data. However, finding the solution of such a optimization problem is $NP$-hard, so one can use the following iterative algorithm to find local best candidates for the matrix $\mathbb M$ :
@@ -134,47 +134,47 @@ This optimization method gives us the best matrix $\mathbf M$ with rank $R$ w.r.
     - Set $\widetilde{M} = U\widetilde{D}V^T$, the new matrix of rank $R$.
     - Set $\mathbf{M}^{(l)}$as : 
     \[
-      \mathbf{M}^{(l)} = \begin{cases} X_{ij} \quad \text{for } (i,j) \in \Omega \\
+      \mathbf{M}^{(l)} = \begin{cases} \mathbf{X}_{ij} \quad \text{for } (i,j) \notin \Omega \\
                                        \widetilde{M}_{i,j} \quad \text{for } (i,j) \notin \Omega \end{cases}
       \]
   * **while $\|M^{(l)}-M^{(l-1)}\|_F> tol\|M^{(l)}\|_F$ and $l < 1000$**:
-  * Store the error $\sum_{(i,j) \in \Omega} (X_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment for each value of $R$ from $1$ to $p$, then pick the $R$ which gives the lowest error.
+  * Store the error $\sum_{(i,j) \in \Omega} (\mathbf{X}_{ij} - M^{(l)}_{ij})^2$ and then repeat this experiment for each value of $R$ from $1$ to $p$, then pick the $R$ which gives the lowest error.
   
   We decided multiply the initial $\|M^{(l)}-M^{(l-1)}\|_F$ stopping criteria by $\|M^{(l)}\|_F$ to take into account the magnitude of the elements in $M$, and added the condition $l<1000$ in case of the algorithm would not converge to the desired tolerance in a reasonable amount of time. In other words, the algorithm stops and returns the matrix $M^{(l)}$ if there was a change of less than $0.01\%$ from the previous matrix $M^{(l-1)}$, or if we go above $1000$ iterations.
   
 
 ## KDE modified approach
-This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian data set of size $N \times p$ The goal is to minimize w.r.t $R$ the following quantity :
+This approach is a modification of the KDE  method from [Notes 06 - T. Masak](https://htmlpreview.github.io/?https://github.com/TMasak/StatComp/blob/master/Notes/06_CV.html#bandwidth-selection-for-kde). Let, as usual, $\mathbf{X}$ be a multivariate Gaussian data set of size $N \times p$ The goal is to minimize w.r.t $r$ the following quantity :
 
 \[
-\mathbb{E} \| \widehat{C}_R - C \|_F^2 = \mathbb{E}\| \widehat{C}_R \|_F - 2 \mathbb{E} \langle \widehat{C}_R, C \rangle + \| C \|_F^2
+\mathbb{E} \| \widehat{C}_r - C \|_F^2 = \mathbb{E}\| \widehat{C}_r \|_F - 2 \mathbb{E} \langle \widehat{C}_r, C \rangle + \| C \|_F^2
 \]
 
-with $\widehat{C}_R$ being the truncated covariance estimator of rank $R$, $C$ being the covariance matrix and $\|.\|_F$ being the Frobenius norm while $\langle X, Y \rangle$ represents the sum of all elements from the Hadamard product of the two matrices $X,Y$, or in mathematical terms : $\langle X, Y \rangle := \sum_{i,j}X_{i,j}Y_{i,j}$.
+with $\widehat{C}_r$ being the truncated covariance estimator of rank $r$, $C$ being the covariance matrix and $\|.\|_F$ being the Frobenius norm while $\langle X, Y \rangle$ represents the sum of all elements from the Hadamard product of the two matrices $X,Y$, or in mathematical terms : $\langle X, Y \rangle := \sum_{i,j}X_{i,j}Y_{i,j}$.
 Assuming that the mean of $\mathbf{X}$ is zero, we get:
 \[
-\mathbb{E} \langle \widehat{C}_R^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_R^{(-n)}}_{\approx \mathbb{E} \widehat{C}_R}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_R , X_n X_n^\top \rangle
+\mathbb{E} \langle \widehat{C}_r^{(-n)}, X_n X_n^\top \rangle = \langle \underbrace{\mathbb{E}[ \widehat{C}_r^{(-n)}}_{\approx \mathbb{E} \widehat{C}_r}], \underbrace{\mathbb{E} [X_n X_n^\top}_{ = C}] \rangle \approx \mathbb{E} \langle \widehat{C}_r , X_n X_n^\top \rangle
 \]
 
-Therefore, since the truncated covariance estimator is not linear we obtain an approximation, which we will plug back into the initial quantity we wish to minimize. By differentiating the quantity w.r.t $R$, we obtain the desired ranking as it will be the only value depending on $R$. Overall, we implement this method as follows for every rank $R$:
+Therefore, since the truncated covariance estimator is not linear we obtain an approximation, which we will plug back into the initial quantity we wish to minimize. By differentiating the quantity w.r.t $r$, we obtain the desired ranking as it will be the only value depending on $r$. Overall, we implement this method as follows for every rank $r$:
 
-* Estimate Covariance $\widehat{C}$ from given data $X$
-* Decompose $\widehat{C}$ and set $p-R$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $R$ ($\widehat{C}_R$)
-* Set $Err_R = \|\widehat{C}_R\|_F$
+* Estimate Covariance $\widehat{C}$ from given data $\mathbf{X}$
+* Decompose $\widehat{C}$ and set $p-r$ smallest eigenvalues to $0$, then rebuild it to reduce its rank to $R$ ($\widehat{C}_r$)
+* Set $Err_r = \|\widehat{C}_r\|_F$
 * **for** $j$ in $1,\dots,N$:
-  - Compute $\widehat{C}_R^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $X$ then truncate it to rank $R$.
-  - Subtract $\frac{2}{N}\langle\widehat{C}_R,\widehat{C}_R^{(-j)}\rangle$ from $Err_R$
+  - Compute $\widehat{C}_r^{(-j)}$ by estimating the covariance of $X^{(-j)}$, $j$ being the missing observation in $\mathbf{X}$ then truncate it to rank $r$.
+  - Subtract $\frac{2}{N}\langle \widehat{C}_r^{(-j)}, X_jX_j^T\rangle$ from $Err_r$
 * **end**
-* Choose $R^* = \underset{R}{\mathrm{arg\,min}} \quad Err_R$ according to the minimal error $Err_R$
+* Choose $r^* = \underset{r}{\mathrm{arg\,min}} \quad Err_r$ according to the minimal error $Err_r$
 
-Stepping into the for-loop we realize that it is pretty similar to a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_R$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $R$.
+Stepping into the for-loop we realize that it is pretty similar to a Leave-One-Out Cross-validation. In this Method we are trading off high computational cost against a stable solution. As shown in the simulations, we will often get negative values for $Err_r$, as one of its components cannot be computed ($\|C\|_F^2$) but was not necessary to find the optimal $r$.
 
     
 # Simulation and comparison of CV methods
 
 ## Simulation data set description
 
-As described in[Cross-validation on PCA methods], one is now equipped with multiple approaches to recover the best amount of dimensions needed to represent data "accurately" of a data set. Intuitively, every method must have its different advantages and drawbacks.
+As described in [Cross-validation on PCA methods], one is now equipped with multiple approaches to recover the best amount of dimensions needed to represent data "accurately" of a data set. Intuitively, every method must have its different advantages and drawbacks.
 To get a better feeling on how the Cross-Validation methods behave in different circumstances, one can run a simulation study on a variety of synthesized data sets. This allows us to discover the limits of the different methods used and to conclude and recommend different Algorithms with respect to its underlying data. 
 By construction of our Algorithms, every single one of them besides the [Naïve Approach], the [Matrix completion method] is only applicable to Multivariate Gaussian distributed data. Therefore we restrict ourselves to this special distribution and create corresponding data in order to get meaningful and comparable results. All in all, $9$ different data sets were considered and the results of the five algorithms were compared. Furthermore, we only consider centered Gaussian Multivariate Random variables and create three base data sets, on which we infer three kinds of different noises. The first data set is a standard Multivariate Gaussian data set while the second and third base data sets will rely on a random and structured covariance matrix respectively. We denote our base data sets as $D^{i}_0, D^{i}_1$ and $D^{i}_2$ for $i \in \{1,\dots,3\}$, corresponding to each type of noise. It consists of data $\mathbf{X}=\{\mathbf{X}^1,\dots,\mathbf{X}^N\}$ and noise $\epsilon^{i}$. The amount of different parameters make it difficult to write get a single big picture of the problem, which is the reason we implemented a Shiny App that lets the reader tune the parameters as he pleases. We strongly recommend to check it out and test the limits of the implemented cross-validation methods. 
 
