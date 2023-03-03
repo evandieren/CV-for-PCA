@@ -12,16 +12,6 @@ library(mvtnorm)
 library(RColorBrewer)
 ```
 
-**Todo**
-
-* Report:
-  * Overall conclusion
-
-  
-* Polishing:
-
-  * Consider and incorporate "General Feedback for Small Projects" - Manual 11
-
 # Introduction
 
 ## Problem description
